@@ -10,26 +10,26 @@ This repository showcases the architecture and implementation of a complete RAG 
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                              DATA PIPELINE                                    │
+│                              DATA PIPELINE                                   │
 │                                                                              │
-│   Websites ──┬──► Python Crawlers ──┬──► Document Processor ──► Markdown    │
+│   Websites ──┬──► Python Crawlers ──┬──► Document Processor ──► Markdown     │ 
 │   Dropbox ───┤   (3 specialized)    │   (PDF/DOCX/PPTX/XLSX)      │          │
-│   Local ─────┘                      │                              │          │
-│                                     └──► Document Mapper ──────────┤          │
-│                                         (fuzzy matching)           │          │
+│   Local ─────┘                      │                              │         │
+│                                     └──► Document Mapper ──────────┤         │
+│                                         (fuzzy matching)           │         │
 └────────────────────────────────────────────────────────────────────┼─────────┘
                                                                      │
 ┌────────────────────────────────────────────────────────────────────┼─────────┐
-│                              RAG ENGINE                            ▼          │
+│                              RAG ENGINE                            ▼         │
 │                                                                              │
-│   Ingestion ──► Vector DB ──► Hybrid Search ──► LLM Generation ──► Response │
+│   Ingestion ──► Vector DB ──► Hybrid Search ──► LLM Generation ──► Response  │
 │   (dense +      (Pinecone)    (dense + sparse   (with re-ranking)            │
 │    sparse)                     + metadata)                                   │
 │                                     │                                        │
 │                    ┌────────────────┴────────────────┐                       │
 │                    ▼                                 ▼                       │
-│              2-Tier Cache                    Feedback Learning              │
-│           (Redis + PostgreSQL)            (source scoring + patterns)       │
+│              2-Tier Cache                    Feedback Learning               │
+│           (Redis + PostgreSQL)            (source scoring + patterns)        │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
