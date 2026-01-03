@@ -6,50 +6,50 @@ This document provides a comprehensive overview of the Applied LLM RAG System ar
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           DOCUMENT SOURCES                                   │
-├───────────────┬───────────────┬───────────────┬───────────────────────────────┤
-│   Websites    │   Dropbox     │   Local Files │   Other APIs                  │
-│   (crawled)   │   (API)       │   (PDF/DOCX)  │   (extensible)                │
-└───────┬───────┴───────┬───────┴───────┬───────┴───────────────┬───────────────┘
+│                           DOCUMENT SOURCES                                  │
+├───────────────┬───────────────┬───────────────┬─────────────────────────────┤
+│   Websites    │   Dropbox     │   Local Files │   Other APIs                │
+│   (crawled)   │   (API)       │   (PDF/DOCX)  │   (extensible)              │
+└───────┬───────┴───────┬───────┴───────┬───────┴───────────────┬─────────────┘
         │               │               │                       │
         ▼               ▼               ▼                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        PYTHON PROCESSING LAYER                               │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │   Crawlers  │  │  Document   │  │   Cloud     │  │    Document         │  │
-│  │   (3 types) │  │  Processor  │  │   Storage   │  │    Mapper           │  │
-│  │             │  │  (4 formats)│  │  Processor  │  │  (fuzzy matching)   │  │
-│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+│                        PYTHON PROCESSING LAYER                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
+│  │   Crawlers  │  │  Document   │  │   Cloud     │  │    Document         │ │
+│  │   (3 types) │  │  Processor  │  │   Storage   │  │    Mapper           │ │
+│  │             │  │  (4 formats)│  │  Processor  │  │  (fuzzy matching)   │ │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────────────┘ │
 └────────────────────────────────────────┬────────────────────────────────────┘
                                          │ Markdown files
                                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        NODE.JS INGESTION LAYER                               │
-│  ┌─────────────────────────────────────────────────────────────────────────┐ │
-│  │                    Document Ingestion Pipeline                           │ │
-│  │  • Chunking with overlap                                                 │ │
-│  │  • Dense embeddings (OpenAI text-embedding-3-large)                     │ │
-│  │  • Sparse vectors (term frequency hashing)                              │ │
-│  │  • Metadata enhancement                                                  │ │
-│  │  • Duplicate detection                                                   │ │
-│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                        NODE.JS INGESTION LAYER                              │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                    Document Ingestion Pipeline                           │ 
+│  │  • Chunking with overlap                                                 │ 
+│  │  • Dense embeddings (OpenAI text-embedding-3-large)                      │ 
+│  │  • Sparse vectors (term frequency hashing)                               │
+│  │  • Metadata enhancement                                                  │ 
+│  │  • Duplicate detection                                                   │ 
+│  └─────────────────────────────────────────────────────────────────────────┘|
 └────────────────────────────────────────┬────────────────────────────────────┘
                                          │
                                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           VECTOR DATABASE                                    │
-│                           (Pinecone)                                         │
-│  ┌─────────────────────────────────────────────────────────────────────────┐ │
-│  │  • Dense vectors (3072 dimensions)                                       │ │
-│  │  • Sparse vectors (keyword indices)                                      │ │
-│  │  • Rich metadata (source, category, priority, dates)                    │ │
-│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                           VECTOR DATABASE                                   │
+│                           (Pinecone)                                        │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │  • Dense vectors (3072 dimensions)                                       │ 
+│  │  • Sparse vectors (keyword indices)                                      │ 
+│  │  • Rich metadata (source, category, priority, dates)                     │
+│  └─────────────────────────────────────────────────────────────────────────┘│
 └────────────────────────────────────────┬────────────────────────────────────┘
                                          │
                                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        NODE.JS RAG LAYER                                     │
-│                                                                              │
+│                        NODE.JS RAG LAYER                                    │
+│                                                                             │
 │  ┌────────────────────┐     ┌────────────────────┐     ┌──────────────────┐ │
 │  │   Hybrid Search    │     │   2-Tier Cache     │     │    Feedback      │ │
 │  │   + Re-ranking     │     │   (Redis + PG)     │     │    Learning      │ │
@@ -58,24 +58,24 @@ This document provides a comprehensive overview of the Applied LLM RAG System ar
 │  │  • Alpha blending  │     │  • L2: PostgreSQL  │     │  • Pattern learn │ │
 │  │  • LLM re-rank     │     │  • TTL + protect   │     │  • Comment score │ │
 │  └────────────────────┘     └────────────────────┘     └──────────────────┘ │
-│                                                                              │
-│  ┌─────────────────────────────────────────────────────────────────────────┐ │
-│  │                    Streaming Response Handler                            │ │
-│  │  • Cache hit → instant JSON response                                    │ │
-│  │  • Cache miss → SSE streaming                                           │ │
-│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                    Streaming Response Handler                            │ 
+│  │  • Cache hit → instant JSON response                                     │
+│  │  • Cache miss → SSE streaming                                            │
+│  └─────────────────────────────────────────────────────────────────────────┘│
 └────────────────────────────────────────┬────────────────────────────────────┘
                                          │
                                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           CLIENT LAYER                                       │
-│  ┌─────────────────────────────────────────────────────────────────────────┐ │
-│  │                    Streaming Chat Client                                 │ │
-│  │  • Automatic cache/stream detection                                     │ │
-│  │  • Progressive UI updates                                               │ │
-│  │  • Session persistence                                                  │ │
-│  │  • Source attribution                                                   │ │
-│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                           CLIENT LAYER                                      │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                    Streaming Chat Client                                 │
+│  │  • Automatic cache/stream detection                                      │
+│  │  • Progressive UI updates                                                │
+│  │  • Session persistence                                                   │
+│  │  • Source attribution                                                    │
+│  └─────────────────────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -140,7 +140,7 @@ Response caching for sub-100ms repeated queries:
 
 ```
 ┌─────────────────────────────────────────┐
-│              Cache Flow                  │
+│              Cache Flow                 │
 │                                         │
 │   Query → [L1 Redis] ──hit──→ Response  │
 │              │                          │
@@ -153,7 +153,7 @@ Response caching for sub-100ms repeated queries:
 │         [LLM Generation]                │
 │              │                          │
 │              ▼                          │
-│     Store in L1 + L2 → Response        │
+│     Store in L1 + L2 → Response         │
 └─────────────────────────────────────────┘
 ```
 

@@ -10,26 +10,26 @@ This repository showcases the architecture and implementation of a complete RAG 
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                              DATA PIPELINE                                    │
+│                              DATA PIPELINE                                   │
 │                                                                              │
-│   Websites ──┬──► Python Crawlers ──┬──► Document Processor ──► Markdown    │
+│   Websites ──┬──► Python Crawlers ──┬──► Document Processor ──► Markdown     │ 
 │   Dropbox ───┤   (3 specialized)    │   (PDF/DOCX/PPTX/XLSX)      │          │
-│   Local ─────┘                      │                              │          │
-│                                     └──► Document Mapper ──────────┤          │
-│                                         (fuzzy matching)           │          │
+│   Local ─────┘                      │                              │         │
+│                                     └──► Document Mapper ──────────┤         │
+│                                         (fuzzy matching)           │         │
 └────────────────────────────────────────────────────────────────────┼─────────┘
                                                                      │
 ┌────────────────────────────────────────────────────────────────────┼─────────┐
-│                              RAG ENGINE                            ▼          │
+│                              RAG ENGINE                            ▼         │
 │                                                                              │
-│   Ingestion ──► Vector DB ──► Hybrid Search ──► LLM Generation ──► Response │
+│   Ingestion ──► Vector DB ──► Hybrid Search ──► LLM Generation ──► Response  │
 │   (dense +      (Pinecone)    (dense + sparse   (with re-ranking)            │
 │    sparse)                     + metadata)                                   │
 │                                     │                                        │
 │                    ┌────────────────┴────────────────┐                       │
 │                    ▼                                 ▼                       │
-│              2-Tier Cache                    Feedback Learning              │
-│           (Redis + PostgreSQL)            (source scoring + patterns)       │
+│              2-Tier Cache                    Feedback Learning               │
+│           (Redis + PostgreSQL)            (source scoring + patterns)        │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -145,7 +145,7 @@ if (topScore - secondScore < RERANK_THRESHOLD) {
 - **Pinecone**: Serverless vector database
 - **Redis**: L1 cache layer
 - **PostgreSQL**: L2 cache + feedback storage
-- **OpenAI**: Embeddings (text-embedding-3-large) + LLM (GPT-4)
+- **OpenAI**: Embeddings (text-embedding-3-large) + LLM (GPT-5-mini and nano)
 
 ## What This Repository Demonstrates
 
