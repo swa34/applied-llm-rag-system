@@ -1,0 +1,20 @@
+# Document Processing Pipeline Requirements
+# Install: pip install -r requirements.txt
+
+# Web Crawling
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+html2text>=2020.1.16
+lxml>=4.9.0
+
+# Document Processing
+python-pptx>=0.6.21      # PowerPoint extraction
+python-docx>=0.8.11      # Word document extraction
+PyPDF2>=3.0.0            # PDF text extraction
+openpyxl>=3.1.0          # Excel spreadsheet extraction
+
+# Utilities
+python-dotenv>=1.0.0     # Environment variable management
+
+# Optional: Enhanced PDF processing
+# pdfminer.six>=20221105  # Alternative PDF parser (uncomment if needed)
