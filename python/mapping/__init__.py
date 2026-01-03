@@ -7,7 +7,7 @@ detection using fuzzy matching and confidence scoring.
 Classes:
     DocumentMapper: Cross-reference documents with fuzzy matching
 
-Author: Scott Anderson
+Author: Scott Allen
 """
 
 from .document_mapper import DocumentMapper

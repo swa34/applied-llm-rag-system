@@ -3,7 +3,7 @@
  *
  * Real-time chat streaming with cache-aware response handling.
  *
- * @author Scott Anderson
+ * @author Scott Allen
  */
 
 export { default as StreamingChatClient } from './chatStreamClient.js';

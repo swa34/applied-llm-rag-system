@@ -15,23 +15,23 @@ Production considerations:
 - Graceful error handling
 - Memory-efficient queue management
 
-Author: Scott Anderson
+Author: Scott Allen
 """
 
-import requests
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse, parse_qs
+import hashlib
+import json
+import re
+import time
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
-import time
-import json
-import xml.etree.ElementTree as ET
-import html2text
-import re
-import hashlib
-from typing import List, Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
+from urllib.parse import parse_qs, urljoin, urlparse
 
+import html2text
+import requests
 from base_crawler import BaseCrawler
+from bs4 import BeautifulSoup
 
 
 class DeepCrawler(BaseCrawler):

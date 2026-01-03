@@ -13,24 +13,24 @@ Production features:
 - Heading detection from document styles
 - Batch processing with summary generation
 
-Author: Scott Anderson
+Author: Scott Allen
 """
 
-import os
-import sys
-import json
 import argparse
+import json
+import os
+import re
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-import re
 
+import PyPDF2
+import requests
+from docx import Document
+from openpyxl import load_workbook
 # Document processing libraries
 from pptx import Presentation
-from docx import Document
-import PyPDF2
-from openpyxl import load_workbook
-import requests
 
 
 class DocumentProcessor:

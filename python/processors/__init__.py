@@ -8,10 +8,10 @@ Classes:
     DocumentProcessor: Multi-format document text extraction
     CloudStorageProcessor: Dropbox API integration for file processing
 
-Author: Scott Anderson
+Author: Scott Allen
 """
 
-from .document_processor import DocumentProcessor
 from .cloud_storage_processor import CloudStorageProcessor
+from .document_processor import DocumentProcessor
 
 __all__ = ['DocumentProcessor', 'CloudStorageProcessor']

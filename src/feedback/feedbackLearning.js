@@ -11,7 +11,7 @@
  * This creates a continuous improvement loop where user feedback
  * directly influences future search results.
  *
- * @author Scott Anderson
+ * @author Scott Allen
  */
 
 import 'dotenv/config';

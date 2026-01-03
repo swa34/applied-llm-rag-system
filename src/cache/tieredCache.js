@@ -18,13 +18,13 @@
  *        │    Cache HIT ◄────────────────────────┘
  *        └─────> Cache MISS ─────> RAG Pipeline
  *
- * @author Scott Anderson
+ * @author Scott Allen
  */
 
-import 'dotenv/config';
-import pg from 'pg';
-import Redis from 'ioredis';
 import crypto from 'crypto';
+import 'dotenv/config';
+import Redis from 'ioredis';
+import pg from 'pg';
 
 const { Pool } = pg;
 

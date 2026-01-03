@@ -15,17 +15,18 @@ Production features:
 - File size limits
 - Comprehensive summary generation
 
-Author: Scott Anderson
+Author: Scott Allen
 """
 
+import json
 import os
 import sys
-import json
-import requests
-from pathlib import Path
-from typing import List, Dict, Optional
-from datetime import datetime
 import time
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional
+
+import requests
 
 from .document_processor import DocumentProcessor
 

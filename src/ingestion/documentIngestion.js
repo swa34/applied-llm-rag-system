@@ -9,16 +9,16 @@
  * - Duplicate detection via content hashing
  * - CLI interface with dry-run, purge, and recreate options
  *
- * @author Scott Anderson
+ * @author Scott Allen
  */
 
-import fs from 'fs';
-import path from 'path';
+import { Pinecone } from '@pinecone-database/pinecone';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
-import pdfParse from 'pdf-parse/lib/pdf-parse.js';
+import fs from 'fs';
 import OpenAI from 'openai';
-import { Pinecone } from '@pinecone-database/pinecone';
+import path from 'path';
+import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 
 dotenv.config();
 

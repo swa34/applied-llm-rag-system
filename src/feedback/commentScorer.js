@@ -8,7 +8,7 @@
  *
  * This reduces LLM API costs by 60-80% while maintaining accuracy.
  *
- * @author Scott Anderson
+ * @author Scott Allen
  */
 
 import 'dotenv/config';

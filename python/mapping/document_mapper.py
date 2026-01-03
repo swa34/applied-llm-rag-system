@@ -13,16 +13,17 @@ Use cases:
 - Detect when a page is a navigation portal vs content page
 - Build document relationship graphs for enhanced retrieval
 
-Author: Scott Anderson
+Author: Scott Allen
 """
 
-import os
 import json
+import os
 import re
-from pathlib import Path
-from urllib.parse import urlparse, unquote
 from difflib import SequenceMatcher
-from typing import Dict, List, Tuple, Optional
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+from urllib.parse import unquote, urlparse
+
 from bs4 import BeautifulSoup
 
 

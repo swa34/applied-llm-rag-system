@@ -16,19 +16,20 @@ Security considerations:
 - Configurable failure thresholds
 - Safe credential handling
 
-Author: Scott Anderson
+Author: Scott Allen
 """
 
-import requests
 import json
 import os
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse
-from datetime import datetime
 import time
+from datetime import datetime
 from pathlib import Path
-import html2text
 from typing import Dict, List, Optional, Tuple
+from urllib.parse import urljoin, urlparse
+
+import html2text
+import requests
+from bs4 import BeautifulSoup
 
 # Import document utilities (optional, for cross-referencing)
 try:

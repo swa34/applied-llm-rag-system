@@ -209,7 +209,7 @@ npm run ingest -- --purge
 
 ## Author
 
-**Scott Anderson**
+**Scott Allen**
 
 This project is based on real-world production experience building enterprise RAG systems. The code has been sanitized and generalized for public sharing while preserving the architectural patterns and technical approaches.
 

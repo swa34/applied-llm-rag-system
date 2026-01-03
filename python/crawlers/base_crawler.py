@@ -10,20 +10,21 @@ This module demonstrates production-ready web crawling techniques:
 - URL normalization and filtering
 - Markdown conversion with metadata
 
-Author: Scott Anderson
+Author: Scott Allen
 """
 
-import requests
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse
-from datetime import datetime
-from pathlib import Path
-import time
 import json
 import re
-import html2text
+import time
 from abc import ABC, abstractmethod
-from typing import List, Dict, Set, Tuple, Optional
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional, Set, Tuple
+from urllib.parse import urljoin, urlparse
+
+import html2text
+import requests
+from bs4 import BeautifulSoup
 
 
 class BaseCrawler(ABC):

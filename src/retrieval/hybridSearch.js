@@ -13,7 +13,7 @@
  * - Support for multiple LLM providers (GPT-4, GPT-5)
  * - Performance timing and debugging
  *
- * @author Scott Anderson
+ * @author Scott Allen
  */
 
 import 'dotenv/config';

@@ -7,8 +7,9 @@
  * - FeedbackLearning: Main system for analyzing feedback and adjusting retrieval
  * - CommentScorer: Hybrid regex+LLM comment analysis
  *
- * @author Scott Anderson
+ * @author Scott Allen
  */
 
-export { default as FeedbackLearning } from './feedbackLearning.js';
 export { default as CommentScorer } from './commentScorer.js';
+export { default as FeedbackLearning } from './feedbackLearning.js';
+

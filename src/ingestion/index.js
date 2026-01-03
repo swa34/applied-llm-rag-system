@@ -3,7 +3,7 @@
  *
  * Vector database ingestion pipeline with hybrid search support.
  *
- * @author Scott Anderson
+ * @author Scott Allen
  */
 
 export { default as DocumentIngestion } from './documentIngestion.js';

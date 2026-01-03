@@ -9,11 +9,11 @@ Classes:
     DeepCrawler: Sitemap-aware comprehensive site crawler
     AuthenticatedCrawler: Secure crawler with multi-domain token support
 
-Author: Scott Anderson
+Author: Scott Allen
 """
 
+from .authenticated_crawler import AuthenticatedCrawler
 from .base_crawler import BaseCrawler
 from .deep_crawler import DeepCrawler
-from .authenticated_crawler import AuthenticatedCrawler
 
 __all__ = ['BaseCrawler', 'DeepCrawler', 'AuthenticatedCrawler']

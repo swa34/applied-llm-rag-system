@@ -12,7 +12,7 @@
  * Works with the server-side cache layer to provide
  * sub-100ms responses for frequently asked questions.
  *
- * @author Scott Anderson
+ * @author Scott Allen
  */
 
 class StreamingChatClient {
