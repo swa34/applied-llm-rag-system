@@ -145,7 +145,7 @@ if (topScore - secondScore < RERANK_THRESHOLD) {
 - **Pinecone**: Serverless vector database
 - **Redis**: L1 cache layer
 - **PostgreSQL**: L2 cache + feedback storage
-- **OpenAI**: Embeddings (text-embedding-3-large) + LLM (GPT-4)
+- **OpenAI**: Embeddings (text-embedding-3-large) + LLM (GPT-5-mini and nano)
 
 ## What This Repository Demonstrates
 
@@ -209,7 +209,7 @@ npm run ingest -- --purge
 
 ## Author
 
-**Scott Anderson**
+**Scott Allen**
 
 This project is based on real-world production experience building enterprise RAG systems. The code has been sanitized and generalized for public sharing while preserving the architectural patterns and technical approaches.
 
