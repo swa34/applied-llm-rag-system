@@ -2,8 +2,9 @@ import { readdir, readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 
-export async function loadDocuments(directory) {
-  const files = (await readdir(directory, { withFileTypes: true }))
+export async function loadDocuments(directory, options = {}) {
+  const { files: allowedFiles, passageIds } = options;
+  const files = allowedFiles ? [...allowedFiles].sort() : (await readdir(directory, { withFileTypes: true }))
     .filter(entry => entry.isFile() && entry.name.endsWith('.md') && entry.name !== 'README.md')
     .map(entry => entry.name).sort();
   const chunks = [];
@@ -16,7 +17,9 @@ export async function loadDocuments(directory) {
       const position = `${startLine}${startColumn ? `:${startColumn}` : ''}`;
       const hash = createHash('sha256').update(`${section}\n${position}\n${text}`).digest('hex').slice(0, 12);
       const firstTextLine = startLine + body.findIndex(line => line.trim());
-      chunks.push({ id: `${file}#${hash}`, file, title, section, line: firstTextLine, text });
+      const declaredId = passageIds?.get(`${file}\0${section}`);
+      if (passageIds && !declaredId) throw new Error(`Undeclared evidence section: ${file} — ${section}.`);
+      chunks.push({ id: declaredId ?? `${file}#${hash}`, file, title, section, line: firstTextLine, text });
     };
     for (const [i, line] of markdown.split('\n').entries()) {
       const heading = /^(#{1,6})\s+(.+)$/.exec(line);

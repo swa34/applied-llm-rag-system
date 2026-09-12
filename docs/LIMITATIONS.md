@@ -6,7 +6,9 @@ The [README](../README.md) is the starting point for the showcase. This page rec
 
 ## Independent demo limits
 
-The [local demo guide](LOCAL_DEMO.md) documents Node.js 24.21.0 from `.nvmrc`, an existing OpenAI credential, and commands for interactive chat, live scenarios, and offline tests. Its root package manifest has no external dependencies. The four synthetic documents and focused tests establish a small implementation scope, not a representative dataset or formal evaluation.
+The [local demo guide](LOCAL_DEMO.md) documents Node.js 24.21.0 from `.nvmrc`, an existing OpenAI credential, and commands for interactive chat, live development scenarios, and offline tests. Its root package manifest has no external dependencies. The ten synthetic documents, 38 passages, and compact case suites establish a bounded implementation scope, not a representative dataset or formal evaluation.
+
+The development and held-out manifests are structurally separate, but both are visible in this public repository. “Held out” means the evaluation turns are excluded from prompt, retrieval, and checker tuning; it is not secrecy. Offline checks detect exact normalized split overlap and invalid source references, not semantic paraphrase leakage or whether a person inspected a file. No held-out live run, answer-correctness score, retrieval metric, or human-adjudicated result exists yet.
 
 The demo rebuilds an in-memory index on every start, calls hosted inference, and retains at most six completed exchanges per conversation. It has no answer cache, streaming interface, or legacy service integration. Citation checks establish retrieved source membership and exact quotation text; they do not prove that a quote supports its attached claim. Model decisions and retrieval coverage remain fallible.
 
@@ -23,7 +25,7 @@ The active default is `gpt-5.6-terra`, with `gpt-5.6-luna` selectable through `D
 - An ingestion command exists, but a complete answer-generation server and chat endpoint are absent.
 - Cache storage expects database tables without accompanying setup migrations.
 - Python import paths are inconsistent across package and direct-script execution.
-- The demo tests and tiny fictional corpus do not cover these original components. The CI workflow covers only the independent demo; its first hosted push and pull-request runs passed. There is no formal evaluation result set.
+- The demo tests and compact fictional corpus do not cover these original components. The CI workflow covers only the independent demo; its first hosted push and pull-request runs passed. There is no formal evaluation result set.
 
 The examples reference hosted model and vector services as well as Redis, PostgreSQL, and cloud storage. Listing those dependencies does not establish compatibility, availability, or a working local setup. The independent demo supplies its own documented execution path without connecting those services.
 

@@ -5,7 +5,7 @@ import { createDemo } from './setup.mjs';
 function display(result, stdout, stderr) {
   stdout.write(`${result.answer}\n`);
   result.citations.forEach((source, i) => {
-    stdout.write(`[${i + 1}] sample-data/fictional/${source.file}:${source.line} — ${source.section}\n`);
+    stdout.write(`[${i + 1}] sample-data/fictional/v1/${source.file}:${source.line} — ${source.section}\n`);
     source.quotes.forEach(quote => stdout.write(`    ${quote}\n`));
   });
   stderr.write(JSON.stringify({ status: result.status, resolvedQuery: result.query,
@@ -15,7 +15,7 @@ function display(result, stdout, stderr) {
 export async function runCli({ args = process.argv.slice(2), stdin = process.stdin,
   stdout = process.stdout, stderr = process.stderr, setup = createDemo } = {}) {
   if (args.includes('--help')) {
-    stdout.write('npm run demo -- "question"\nnpm run demo  (interactive: /new, /exit)\nnpm run demo:cases  (live fictional scenarios; uses paid OpenAI APIs)\n');
+    stdout.write('npm run demo -- "question"\nnpm run demo  (interactive: /new, /exit)\nnpm run demo:cases  (live development scenarios; uses paid OpenAI APIs)\n');
     return 0;
   }
   stderr.write('Fictional document demo — hosted OpenAI inference; API usage is billed.\n');

@@ -1,6 +1,5 @@
 import { validateRuntime, readConfig } from './config.mjs';
-import { loadDocuments } from './retrieval.mjs';
-import { corpusDirectory } from './setup.mjs';
+import { loadEvaluationData } from './dataset.mjs';
 
 try {
   const args = process.argv.slice(2);
@@ -9,8 +8,9 @@ try {
   }
   validateRuntime();
   if (args[0] === '--config') readConfig();
-  const chunks = await loadDocuments(corpusDirectory);
-  console.log(`Runtime and fictional corpus OK: ${chunks.length} passages.`);
+  const { dataset, development, heldout } = await loadEvaluationData();
+  console.log(`Runtime and fictional dataset OK: ${dataset.chunks.length} passages, ` +
+    `${development.cases.length} development cases, ${heldout.cases.length} held-out cases.`);
   if (args[0] === '--config') console.log('Configuration syntax OK; credentials and model access were not checked with the provider.');
 } catch (error) {
   console.error(error.message);

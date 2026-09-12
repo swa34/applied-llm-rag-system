@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cases, checkScenario } from './scenario-checks.mjs';
+import { checkScenario, loadDevelopmentChecks } from './scenario-checks.mjs';
 import { validateAnswer } from './chat.mjs';
 
-const travel = { id: 'travel#1', file: 'travel.md', section: 'Overnight trip approval', line: 3,
+const { cases } = await loadDevelopmentChecks();
+
+const travel = { id: 'src.travel.overnight-approval', file: 'documents/travel.md', section: 'Overnight trip approval', line: 7,
   text: 'An employee must obtain approval from their direct supervisor before booking an overnight work trip.' };
-const purchase = { id: 'purchase#2', file: 'purchasing.md', section: 'Purchasing approval', line: 3,
+const purchase = { id: 'src.purchasing.approval', file: 'documents/purchasing.md', section: 'Purchasing approval', line: 7,
   text: 'The department head approves purchase requests before an employee places an order.' };
 const resultFor = (texts, sources = [travel]) => ({
   ...validateAnswer({ status: 'answered', claims: texts.map((text, i) => ({
@@ -33,7 +35,7 @@ test('negating a different approver does not reverse the supervisor requirement'
 
 test('full-time tuition exclusion after six months is rejected but the waiting period is allowed', () => {
   const scenario = cases.find(item => item.id === 'tuition-direct');
-  const tuition = { ...travel, id: 'tuition#4', file: 'tuition.md', section: 'Tuition assistance eligibility', text: 'Full-time employees become eligible for tuition assistance after six months of employment.' };
+  const tuition = { ...travel, id: 'src.tuition.eligibility', file: 'documents/tuition.md', section: 'Tuition assistance eligibility', text: 'Full-time employees become eligible for tuition assistance after six months of employment.' };
   const wrong = resultFor(['Full-time staff with six months of service are not eligible for tuition assistance.'], [tuition]);
   assert.ok(checkScenario(scenario, wrong).includes('Answer contradicts a known fixture rule.'));
   const waiting = resultFor(['Full-time employees are not eligible until they complete six months of employment.'], [tuition]);
@@ -42,7 +44,7 @@ test('full-time tuition exclusion after six months is rejected but the waiting p
 
 test('tuition eligibility accepts can receive while retaining the source, waiting period, and exclusion checks', () => {
   const scenario = cases.find(item => item.id === 'tuition-direct');
-  const tuition = { ...travel, id: 'tuition#4', file: 'tuition.md', section: 'Tuition assistance eligibility', text: 'Full-time employees become eligible for tuition assistance after six months of employment.' };
+  const tuition = { ...travel, id: 'src.tuition.eligibility', file: 'documents/tuition.md', section: 'Tuition assistance eligibility', text: 'Full-time employees become eligible for tuition assistance after six months of employment.' };
   const text = 'Full-time employees can receive tuition assistance after six months of employment.';
   assert.deepEqual(checkScenario(scenario, resultFor([text], [tuition])), []);
   assert.ok(checkScenario(scenario, resultFor([text], [travel])).includes('Missing citation to Tuition assistance eligibility.'));
@@ -79,7 +81,7 @@ test('comparison requires factual claims linked to each of the two sources', () 
 
 test('part-time tuition checks reject contradictions and accept explicit exclusion', () => {
   const scenario = cases.find(item => item.id === 'tuition-follow-up');
-  const tuition = { ...travel, id: 'tuition#3', file: 'tuition.md', section: 'Part-time tuition eligibility', text: 'Part-time staff are not eligible for tuition assistance.' };
+  const tuition = { ...travel, id: 'src.tuition.part-time', file: 'documents/tuition.md', section: 'Part-time tuition eligibility', text: 'Part-time staff are not eligible for tuition assistance.' };
   const valid = { ...resultFor([tuition.text], [tuition]), query: 'part-time tuition eligibility' };
   assert.deepEqual(checkScenario(scenario, valid), []);
   const wrong = { ...resultFor(['Part-time staff are not eligible initially, but part-time staff are eligible after six months.'], [tuition]), query: valid.query };
@@ -88,7 +90,59 @@ test('part-time tuition checks reject contradictions and accept explicit exclusi
 
 test('a no-change travel follow-up is not mistaken for a negated approval requirement', () => {
   const scenario = cases.find(item => item.id === 'travel-follow-up');
-  const source = { ...travel, section: 'Part-time travel eligibility' };
+  const source = { ...travel, id: 'src.travel.part-time', section: 'Part-time travel eligibility' };
   const result = { ...resultFor(['Part-time staff follow the same approval process: their supervisor approves the trip. Employment status does not change who approves it.'], [source]), query: 'part-time travel' };
   assert.deepEqual(checkScenario(scenario, result), []);
+});
+
+test('non-answer text constraints reject fabricated conclusions without requiring sources', () => {
+  const scenario = cases.find(item => item.id === 'dev-visitor-weekend-gap');
+  const result = { status: 'insufficient_evidence', answer: 'Weekend visitor access is allowed.',
+    claims: [], citations: [], query: 'weekend visitor access', retrieved: [] };
+  assert.ok(checkScenario(scenario, result).includes('Answer contradicts a known fixture rule.'));
+});
+
+test('new policy fixtures reject direct reversals declared in the dataset', () => {
+  const examples = [
+    ['dev-hybrid-limit', 'src.hybrid-work.schedule',
+      'Eligible employees may work remotely up to two days per week under a written arrangement approved by their manager.',
+      'A manager is not required to approve a two-day hybrid schedule.'],
+    ['dev-commuter-paraphrase', 'src.commuter-benefit.eligibility-amount',
+      'Full-time and part-time employees may receive a pretax commuting contribution of up to $90 per month.',
+      'Part-time employees are not eligible for the $90 monthly contribution.'],
+    ['dev-caregiver-allowance', 'src.caregiver-leave.eligibility',
+      'Eligible employees may use up to three paid caregiver days per calendar year.',
+      'Eligible employees cannot use three paid caregiver days per year.'],
+  ];
+  for (const [id, sourceId, sourceText, wrongAnswer] of examples) {
+    const scenario = cases.find(item => item.id === id);
+    const source = { ...travel, id: sourceId, text: sourceText };
+    assert.ok(checkScenario(scenario, resultFor([wrongAnswer], [source]))
+      .includes('Answer contradicts a known fixture rule.'), id);
+  }
+});
+
+test('new policy contradiction guards accept bounded and approval-dependent paraphrases', () => {
+  const examples = [
+    ['dev-hybrid-limit', 'src.hybrid-work.schedule',
+      'Eligible employees may work remotely up to two days per week under a written arrangement approved by their manager.',
+      'Employees may work up to two days per week, but they cannot do so without manager approval.'],
+    ['dev-commuter-paraphrase', 'src.commuter-benefit.eligibility-amount',
+      'Full-time and part-time employees may receive a pretax commuting contribution of up to $90 per month.',
+      'Part-time employees are eligible, but the program never contributes more than $90 per month.'],
+    ['dev-commuter-paraphrase', 'src.commuter-benefit.eligibility-amount',
+      'Full-time and part-time employees may receive a pretax commuting contribution of up to $90 per month.',
+      'Part-time employees can receive no more than $90 per month.'],
+    ['dev-commuter-paraphrase', 'src.commuter-benefit.eligibility-amount',
+      'Full-time and part-time employees may receive a pretax commuting contribution of up to $90 per month.',
+      'Northbridge will not contribute more than $90 per month for part-time employees.'],
+    ['dev-caregiver-allowance', 'src.caregiver-leave.eligibility',
+      'Eligible employees may use up to three paid caregiver days per calendar year.',
+      'Eligible employees cannot use more than three paid caregiver days per calendar year.'],
+  ];
+  for (const [id, sourceId, sourceText, validAnswer] of examples) {
+    const scenario = cases.find(item => item.id === id);
+    const source = { ...travel, id: sourceId, text: sourceText };
+    assert.deepEqual(checkScenario(scenario, resultFor([validAnswer], [source])), [], id);
+  }
 });

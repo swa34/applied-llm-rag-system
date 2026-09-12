@@ -52,7 +52,7 @@ OpenAI supplies embeddings and generation. GPT-5.6 Terra is the default generati
 Use Node.js 24.21.0 from `.nvmrc`. No npm dependency installation is required.
 
 ```sh
-# Validate the runtime and fictional corpus.
+# Validate the runtime, fictional corpus, and case manifests.
 npm run check
 
 # Run offline tests without credentials.
@@ -69,15 +69,15 @@ Chat requires an existing `OPENAI_API_KEY` and incurs API usage charges. The [se
 
 ## Verification
 
-All **58 offline tests** pass on the pinned runtime, including a clean-copy run without credentials or installed packages. GitHub Actions runs the offline suite and CLI help check.
+All **70 offline tests** pass on the pinned runtime without credentials or installed packages. They cover runtime and provider contracts, retrieval, citations, conversation recovery, the versioned corpus, case schemas, source labels, rubric consistency, and split isolation. GitHub Actions reruns the offline suite and CLI help check for pushed revisions.
 
 Ten focused live scenarios passed for each of Terra and Luna on 2026-09-12 after the documented resolver and checker corrections. Each final claim was independently inspected against its evidence quote. The [verification record](docs/LOCAL_DEMO.md#terra-and-luna-verification) preserves initial failures and distinguishes raw results from corrected-checker replays.
 
-These are known development cases, not a held-out benchmark. Exact quotation checks establish source membership but do not prove that a quote supports its claim. The [evaluation methodology](docs/EVALUATION.md) and [limitations](docs/LIMITATIONS.md) describe those boundaries without making general accuracy, latency, or cost claims.
+Those historical results are known development cases, not a held-out benchmark. The expanded dataset contains ten fictional documents, 38 stable-ID passages, 21 development turns, and a structurally separate eleven-turn held-out suite that has not been run. Exact quotation checks establish source membership but do not prove that a quote supports its claim. The [evaluation methodology](docs/EVALUATION.md) and [limitations](docs/LIMITATIONS.md) describe those boundaries without making general accuracy, latency, or cost claims.
 
 ## Repository scope
 
-The runnable application lives in `demo/`, with invented documents in `sample-data/fictional/`. The original `src/` and `python/` directories contain separate document-processing, ingestion, retrieval, cache, feedback, and streaming examples. They are not integrated into the demo; the [feature matrix](docs/FEATURE_STATUS.md) distinguishes their implementation and verification boundaries.
+The runnable application lives in `demo/`, with the versioned invented dataset in `sample-data/fictional/` and its case manifests in `evaluation/fictional/`. The original `src/` and `python/` directories contain separate document-processing, ingestion, retrieval, cache, feedback, and streaming examples. They are not integrated into the demo; the [feature matrix](docs/FEATURE_STATUS.md) distinguishes their implementation and verification boundaries.
 
 Use the fictional corpus for the demonstration. The original ingestion and cloud-processing examples can make remote changes and need the safeguards described in the [security notes](docs/SECURITY.md) before use with real services.
 

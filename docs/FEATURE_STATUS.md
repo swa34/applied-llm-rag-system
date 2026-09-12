@@ -9,11 +9,11 @@ The historical matrix below records the initial audit of the original 21 tracked
 | Scope | Implementation evidence | Verification boundary |
 |---|---|---|
 | Local execution | Root `package.json`, `demo/cli.mjs`, and the [local demo guide](LOCAL_DEMO.md) | Node.js 24.21.0 pinned; no npm dependencies; hosted API credentials required for chat |
-| Reproducible infrastructure | `.nvmrc`, runtime/configuration preflight, and credential-free GitHub Actions workflow | 58 offline tests pass locally on the pinned runtime; hosted runs and earlier counts are recorded in the [verification record](LOCAL_DEMO.md#runtime-and-ci-verification) |
-| Fictional ingestion and retrieval | Four Markdown documents, heading-based passages, in-memory vectors, cosine/keyword rank fusion | Separate from legacy ingestion and managed-vector examples |
+| Reproducible infrastructure | `.nvmrc`, runtime/configuration preflight, and credential-free GitHub Actions workflow | 70 offline tests pass locally on the pinned runtime; hosted runs and historical counts are recorded in the [verification record](LOCAL_DEMO.md#runtime-and-ci-verification) |
+| Fictional ingestion and retrieval | Ten allowlisted Markdown documents, 38 stable-ID passages, in-memory vectors, cosine/keyword rank fusion | Versioned corpus is separate from legacy ingestion and managed-vector examples |
 | Grounded direct answer | Structured claims with retrieved source IDs and exact evidence quotations | Live supervisor-approval lookup passed; quotation checks do not prove claim support |
 | Follow-up context | Last six completed exchanges, standalone query resolution, fresh retrieval, clarification path | Implemented; ten focused live checks passed on 2026-09-12; see [verification record](LOCAL_DEMO.md#verification-record) |
-| Inspection and checks | Offline test suite, scenario runner, query/source/timing/usage output | Focused implementation checks; no formal benchmark or warm-cache test |
+| Inspection and checks | Offline test suite, 21-turn development runner, query/source/timing/usage output | Eight-conversation held-out suite is structurally validated but unrun; no formal benchmark or warm-cache test |
 
 The demo does not implement caching, feedback, streaming, a browser interface, or legacy service integration. The focused checks do not constitute a formal evaluation or a comprehensive security review.
 
@@ -37,7 +37,7 @@ The demo does not implement caching, feedback, streaming, a browser interface, o
 | Feedback | Continuous improvement | [Feedback modules](../src/feedback/) score comments and adjust source scores | No complete flow | Static review only | Partially implemented |
 | Streaming | Cached JSON or progressive SSE | Browser client and callbacks; no paired server or interface | Isolated checks only | Three defects reproduced | Partially implemented |
 | Custom follow-up chat | Not explicitly claimed | Client transcript and session ID; no server-side context resolution | No | No conversational tests | Unverified |
-| Evaluation | No framework supplied | No corpus, fixtures, harness, or result artifacts | No | No | Not implemented |
+| Evaluation | No framework supplied | Original components have no evaluation integration; the independent demo owns separate versioned fixtures | No | No | Not implemented in original components |
 | Injection defenses | No demonstrated controls | No dedicated controls or adversarial suite | No | No | Not implemented |
 | Observability and failure handling | Graceful fallback throughout | Component catches, timing fields, and console logs | Partial components only | No integrated checks | Partially implemented |
 

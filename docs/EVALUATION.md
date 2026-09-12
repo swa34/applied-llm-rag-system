@@ -1,30 +1,34 @@
 # Evaluation methodology
 
-The demo has a focused verification harness; no formal benchmark results have been produced. The independent demo includes four fictional documents, offline tests, and live scenarios; the corpus is limited and no formal evaluation has been completed.
+The demo now has a versioned fictional corpus and separate development and held-out case manifests, but no held-out run or formal benchmark result has been produced. The independent demo includes ten fictional documents, 38 passages, offline integrity tests, and a development scenario runner.
 
 Evaluation should measure both answers from fictional documents and follow-up handling, with results that show where the system succeeds and where it fails.
 
 ## Current focused checks
 
-The [local demo guide](LOCAL_DEMO.md) documents `npm test` for deterministic offline checks and `npm run demo:cases` for live provider scenarios. Ten focused live checks passed on 2026-09-12; the [verification record](LOCAL_DEMO.md#verification-record) documents earlier prompt failures and known-case tuning. The harness records resolved queries, retrieved passages, citations, outcomes, timing, and usage for review.
+The [local demo guide](LOCAL_DEMO.md) documents `npm test` for deterministic offline checks and `npm run demo:cases` for live development scenarios. Ten earlier focused checks passed on 2026-09-12; the [verification record](LOCAL_DEMO.md#verification-record) documents the smaller pre-versioned corpus, prompt failures, and known-case tuning. The development runner now reads only the development manifest and records the dataset identity, suite identity and hash, resolved queries, retrieved passages, citations, outcomes, timing, and usage.
 
-These cases exercise travel and tuition follow-ups with identical wording, ambiguous approvals, a password reset topic change, and a travel expense absent from the corpus. They are development fixtures, not held-out examples. Exact quote and source-membership checks do not score semantic entailment, and a scenario pass is not a general groundedness or reliability result. The demo has no answer cache, so these checks cannot establish behavior with warm caches.
+The versioned [dataset overview](../sample-data/fictional/README.md) links the two machine-readable suites. The development split has 13 self-contained conversations and 21 turns; it retains the ten tuned cases and adds coverage for the expanded documents. The held-out split has eight conversations and eleven turns with disjoint identifiers and normalized conversation seeds. It is validated for structure and source references but is not imported by the development runner.
+
+These remain compact fixtures, not a representative benchmark. Exact quote and source-membership checks do not score semantic entailment, conflict and adversarial cases require human review, and a scenario pass is not a general groundedness or reliability result. The demo has no answer cache, so these checks cannot establish behavior with warm caches.
 
 The methodology below describes the broader evidence still needed.
 
 ## Build a useful test set
 
-Create a versioned fictional corpus with stable document and passage identifiers. Write questions with expected supporting passages, acceptable answer criteria, and an explicit “insufficient evidence” outcome where appropriate. Keep a held-out set separate from the examples used while tuning retrieval or prompts.
+The `northbridge-fictional` corpus is versioned at `1.0.0`. Its explicit manifest allowlists every evidence document and maps each heading to a stable passage identifier. Case rubrics are stored outside the retrievable document tree. Every case is a self-contained ordered conversation whose turns specify a status, supporting passages and factual patterns when answerable, or an explicit clarification or insufficient-evidence outcome.
+
+Offline validation rejects malformed or duplicate identifiers, unsafe or unlisted document paths, missing or oversized passages, unresolved source labels, invalid rubric patterns, incomplete conversations, missing category coverage, and exact normalized split overlap. It proves structural separation and source referential integrity; it cannot prove that no person saw a public file or detect every semantic paraphrase.
 
 Include direct lookups, paraphrases, exact terms, conflicting documents, missing facts, topic changes, and ambiguous references. Conversation cases must include the preceding turns: scoring only the final question would remove the very context being tested.
 
-An invented equipment-lending guide could support this sequence:
+Future versions can add new conversations without reusing exposed questions. For example, an invented equipment-lending guide could support this sequence:
 
 1. “How long can a visitor borrow a camera?”
 2. “Can they renew it?”
 3. “What about a tripod?”
 
-The expected behavior should specify when the subject carries forward and when fresh retrieval is required. An ambiguous question should allow a clarification instead of rewarding a plausible guess.
+That published example is illustrative and must not be treated as an unseen case. Expected behavior should specify when the subject carries forward and when fresh retrieval is required. An ambiguous question should allow a clarification instead of rewarding a plausible guess.
 
 ## Measures to report
 

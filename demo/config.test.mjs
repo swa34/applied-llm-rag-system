@@ -57,7 +57,7 @@ function check(args, env = {}) {
 test('offline preflight runs without credentials and configuration preflight rejects missing key', () => {
   const offline = check([]);
   assert.equal(offline.status, 0, offline.stderr);
-  assert.match(offline.stdout, /Runtime and fictional corpus OK: \d+ passages/);
+  assert.match(offline.stdout, /Runtime and fictional dataset OK: \d+ passages/);
   const missing = check(['--config']);
   assert.equal(missing.status, 1);
   assert.equal(missing.stdout, '');

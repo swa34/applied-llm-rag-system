@@ -22,7 +22,7 @@ A useful assistant has to carry forward the right meaning without carrying forwa
 
 ## A fictional example
 
-The following conversations use the invented Northbridge Learning Institute [corpus](../sample-data/fictional/README.md). They do not state any real organization's policy. The focused scenario runner exercises these cases; ten live checks passed on 2026-09-12. The [verification record](LOCAL_DEMO.md#verification-record) describes earlier failures and known-case tuning.
+The following conversations use the invented Northbridge Learning Institute [corpus](../sample-data/fictional/README.md). They do not state any real organization's policy. These examples remain development fixtures in the expanded scenario runner; ten live checks on the earlier corpus passed on 2026-09-12. The [verification record](LOCAL_DEMO.md#verification-record) describes earlier failures and known-case tuning.
 
 | Earlier question | Follow-up | Behavior to verify in the demo |
 |---|---|---|

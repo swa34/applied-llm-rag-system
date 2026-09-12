@@ -1,15 +1,16 @@
-import { fileURLToPath } from 'node:url';
 import { OpenAIProvider } from './provider.mjs';
-import { loadDocuments, LocalRetriever } from './retrieval.mjs';
+import { LocalRetriever } from './retrieval.mjs';
+import { datasetDirectory, loadDataset } from './dataset.mjs';
 import { Conversation } from './chat.mjs';
 import { validateRuntime } from './config.mjs';
 
-export const corpusDirectory = fileURLToPath(new URL('../sample-data/fictional/', import.meta.url));
+export const corpusDirectory = datasetDirectory;
 
 export async function createDemo() {
   validateRuntime();
   const provider = new OpenAIProvider();
-  const chunks = await loadDocuments(corpusDirectory);
+  const { manifest, manifestSha256, chunks } = await loadDataset(corpusDirectory);
   const retriever = await LocalRetriever.create(chunks, provider);
-  return { provider, retriever, newConversation: () => new Conversation({ provider, retriever }) };
+  return { provider, retriever, dataset: { ...manifest, manifestSha256 },
+    newConversation: () => new Conversation({ provider, retriever }) };
 }

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "corpusId": "northbridge-fictional",
+  "corpusVersion": "1.0.0",
+  "documents": [
+    {
+      "id": "doc.caregiver-leave",
+      "file": "documents/caregiver-leave.md",
+      "passages": [
+        { "id": "src.caregiver-leave.overview", "heading": "Fictional caregiver leave policy" },
+        { "id": "src.caregiver-leave.eligibility", "heading": "Eligibility and allowance" },
+        { "id": "src.caregiver-leave.notice", "heading": "Notice" },
+        { "id": "src.caregiver-leave.documentation", "heading": "Documentation" }
+      ]
+    },
+    {
+      "id": "doc.community-studio-booking",
+      "file": "documents/community-studio-booking.md",
+      "passages": [
+        { "id": "src.community-studio-booking.overview", "heading": "Fictional community studio booking policy" },
+        { "id": "src.community-studio-booking.approval", "heading": "Reservation approval" },
+        { "id": "src.community-studio-booking.capacity-refreshments", "heading": "Capacity and refreshments" },
+        { "id": "src.community-studio-booking.untrusted-annotation", "heading": "Imported vendor annotation" }
+      ]
+    },
+    {
+      "id": "doc.community-studio-operations-bulletin",
+      "file": "documents/community-studio-operations-bulletin.md",
+      "passages": [
+        { "id": "src.community-studio-bulletin.overview", "heading": "Fictional community studio operations bulletin" },
+        { "id": "src.community-studio-bulletin.occupancy", "heading": "Occupancy statement" },
+        { "id": "src.community-studio-bulletin.refreshments", "heading": "Refreshment statement" },
+        { "id": "src.community-studio-bulletin.reconciliation", "heading": "Reconciliation status" }
+      ]
+    },
+    {
+      "id": "doc.commuter-benefit",
+      "file": "documents/commuter-benefit.md",
+      "passages": [
+        { "id": "src.commuter-benefit.overview", "heading": "Fictional commuter benefit guide" },
+        { "id": "src.commuter-benefit.eligibility-amount", "heading": "Eligibility and amount" },
+        { "id": "src.commuter-benefit.enrollment", "heading": "Enrollment timing" },
+        { "id": "src.commuter-benefit.covered-travel", "heading": "Covered travel" }
+      ]
+    },
+    {
+      "id": "doc.hybrid-work",
+      "file": "documents/hybrid-work.md",
+      "passages": [
+        { "id": "src.hybrid-work.overview", "heading": "Fictional hybrid work policy" },
+        { "id": "src.hybrid-work.schedule", "heading": "Hybrid schedule" },
+        { "id": "src.hybrid-work.temporary-location", "heading": "Temporary remote locations" },
+        { "id": "src.hybrid-work.home-support", "heading": "Home workspace support" }
+      ]
+    },
+    {
+      "id": "doc.password-reset",
+      "file": "documents/password-reset.md",
+      "passages": [
+        { "id": "src.password-reset.overview", "heading": "Fictional password reset guide" },
+        { "id": "src.password-reset.self-service", "heading": "Self-service password reset" },
+        { "id": "src.password-reset.help", "heading": "Password reset help" }
+      ]
+    },
+    {
+      "id": "doc.purchasing",
+      "file": "documents/purchasing.md",
+      "passages": [
+        { "id": "src.purchasing.overview", "heading": "Fictional purchasing policy" },
+        { "id": "src.purchasing.approval", "heading": "Purchasing approval" },
+        { "id": "src.purchasing.records", "heading": "Purchase records" }
+      ]
+    },
+    {
+      "id": "doc.travel",
+      "file": "documents/travel.md",
+      "passages": [
+        { "id": "src.travel.overview", "heading": "Fictional travel policy" },
+        { "id": "src.travel.overnight-approval", "heading": "Overnight trip approval" },
+        { "id": "src.travel.part-time", "heading": "Part-time travel eligibility" },
+        { "id": "src.travel.covered-expenses", "heading": "Covered travel expenses" }
+      ]
+    },
+    {
+      "id": "doc.tuition",
+      "file": "documents/tuition.md",
+      "passages": [
+        { "id": "src.tuition.overview", "heading": "Fictional tuition assistance policy" },
+        { "id": "src.tuition.eligibility", "heading": "Tuition assistance eligibility" },
+        { "id": "src.tuition.part-time", "heading": "Part-time tuition eligibility" },
+        { "id": "src.tuition.requests", "heading": "Tuition assistance requests" }
+      ]
+    },
+    {
+      "id": "doc.visitor-access",
+      "file": "documents/visitor-access.md",
+      "passages": [
+        { "id": "src.visitor-access.overview", "heading": "Fictional visitor access guide" },
+        { "id": "src.visitor-access.advance-registration", "heading": "Advance registration" },
+        { "id": "src.visitor-access.same-day", "heading": "Same-day arrival" },
+        { "id": "src.visitor-access.hours-badges", "heading": "Hours and badges" }
+      ]
+    }
+  ]
+}
