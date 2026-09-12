@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { cp, mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readConfig, validateRuntime } from './config.mjs';
 import { OpenAIProvider } from './provider.mjs';
@@ -76,4 +79,23 @@ test('invalid preflight arguments report usage and fail', () => {
   const result = check(['--unknown']);
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Usage: npm run check/);
+});
+
+test('missing or unreadable runtime pin produces a clear startup error', async t => {
+  const directory = await mkdtemp(join(tmpdir(), 'rag-runtime-pin-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  await cp(new URL('./', import.meta.url), join(directory, 'demo'), { recursive: true });
+  for (const state of ['missing', 'unreadable']) {
+    if (state === 'unreadable') await mkdir(join(directory, '.nvmrc'));
+    for (const entrypoint of ['check.mjs', 'cli.mjs', 'scenarios.mjs']) {
+      const result = spawnSync(process.execPath, [join(directory, 'demo', entrypoint)], {
+        encoding: 'utf8', timeout: 5000, env: { PATH: process.env.PATH },
+      });
+      assert.ifError(result.error);
+      assert.equal(result.status, 1, `${state}: ${entrypoint}`);
+      assert.equal(result.stdout, '');
+      assert.match(result.stderr, /Cannot read .nvmrc\. Restore the repository root runtime pin and try again\./);
+      assert.doesNotMatch(result.stderr, /ENOENT|EISDIR|\n\s+at |file:\/\//);
+    }
+  }
 });

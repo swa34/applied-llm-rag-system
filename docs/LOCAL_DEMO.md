@@ -8,6 +8,10 @@ Ten focused live checks passed on 2026-09-12. The verification record below desc
 
 Use Node.js **24.21.0**, pinned in [`.nvmrc`](../.nvmrc), and its bundled npm from the repository root. The supported range is Node 24.21.0 through later Node 24 releases; CI uses the exact pin. If you use nvm, run `nvm install` and `nvm use` in this directory. Other Node major versions are rejected at startup.
 
+The major-version ceiling is a support boundary, not evidence that newer Node versions are incompatible. It keeps local execution within the same major version exercised by CI. Earlier successful runs on a different major do not establish ongoing support for it; widening the range requires an explicit compatibility check and an update to the runtime policy. Run `npm test` for the supported verification flow, which checks the runtime before starting tests.
+
+Keep `.nvmrc` with the repository root. If it is missing or unreadable, startup exits with instructions to restore it; the demo does not guess a replacement runtime.
+
 The demo uses only Node built-in features. There are no third-party npm packages to install or lock, so `npm install`, `npm ci`, and an npm lockfile are unnecessary. This does not resolve dependencies in the original JavaScript or Python examples. Update the runtime pin deliberately and rerun the offline checks when adopting a newer release.
 
 Provide an existing `OPENAI_API_KEY` through the process environment, or keep it in a locally ignored root `.env` file. This repository does not track `.gitignore`. In a fresh Git checkout, add local exclusions before saving credentials or scenario reports:
@@ -76,7 +80,7 @@ Try these separate conversations, using `/new` between them:
 
 ### Phase 4 local verification
 
-On 2026-09-12, `npm test` passed all 54 offline tests on Linux with Node.js 24.21.0 and bundled npm 11.19.0. A clean copy containing the public files and proposed changes, with no `.env` or installed packages, passed the same command and CLI help check. Configuration checks passed with a fake credential and rejected missing credentials and malformed model settings. The runtime download was checked against its official SHA-256 checksum.
+On 2026-09-12, the initial infrastructure-only verification passed the 54 offline tests present at that point on Linux with Node.js 24.21.0 and bundled npm 11.19.0. The subsequent Terra/Luna request and scenario regressions increased the suite to 57 tests before publication. A clean copy containing the public files and proposed changes, with no `.env` or installed packages, passed at both stages, along with the CLI help check. Configuration checks passed with a fake credential and rejected missing credentials and malformed model settings. The runtime download was checked against its official SHA-256 checksum.
 
 New regressions exercise actual abort signals with shortened test deadlines during both fetch and response-body reads, then verify a successful request using the same provider. Failed resolution, retrieval, and answer stages preserve prior conversation history and release the busy guard for the next turn. The body-timeout test reproduced the previous incorrect “invalid JSON” message before the fix.
 
@@ -88,7 +92,11 @@ The generation default was subsequently updated to `gpt-5.6-terra`, with `gpt-5.
 
 The checker now accepts those paraphrases while retaining source, waiting-period, and contradiction checks, with positive and negative regression cases. A small resolver instruction distinguishes groups within one policy from genuinely distinct topics. Final live runs occurred at `2026-09-12T14:22:58.229Z` for Terra and `2026-09-12T14:23:09.592Z` for Luna, using Node 24.21.0, `text-embedding-3-small`, and fourteen fictional passages. Both final sets of saved answers passed **10/10** against the corrected checker. Every final claim was independently inspected against its evidence quote; no unsupported fixture claims were found.
 
-The final runs loaded the earlier checker and retained raw counts of 8/10 and 9/10. Their reports remain unchanged in `local-exports/phase-4-terra-final-results.json` and `local-exports/phase-4-luna-final-results.json`. The separate `local-exports/phase-4-model-recheck.json` records the corrected scores and hashes of the source reports and checker. These are prompt-tuned development cases, not held-out evaluation or a guarantee of future behavior. The expanded offline suite passes **57 tests**, including a clean-copy run without credentials or installed packages.
+The final runs loaded the earlier checker and retained raw counts of 8/10 and 9/10. Their reports remain unchanged in `local-exports/phase-4-terra-final-results.json` and `local-exports/phase-4-luna-final-results.json`. The separate `local-exports/phase-4-model-recheck.json` records the corrected scores and hashes of the source reports and checker. These are prompt-tuned development cases, not held-out evaluation or a guarantee of future behavior. The model-migration suite passed **57 tests**, including a clean-copy run without credentials or installed packages.
+
+### Review follow-up verification
+
+The missing/unreadable `.nvmrc` regression increases the current suite to **58 tests**, all passing on Node 24.21.0. It reproduces the former import-time filesystem stack trace in a temporary incomplete checkout, then verifies a clear startup error from the preflight, chat CLI, and scenario runner. The runtime range is unchanged. Counts of 54 and 57 above describe earlier verification stages.
 
 ## How it works
 

@@ -101,4 +101,4 @@ The [roadmap](ROADMAP.md) records the scope, status, and completion criteria for
 7. Review the implemented security controls and residual risks.
 8. Add a verified demonstration screenshot and finish the portfolio presentation.
 
-The Phase 3 demonstration has passed its focused checks; see the roadmap for the milestone record. Phase 4 has 57 passing offline tests on the pinned runtime and passing hosted CI runs. Phases 5–8 remain planned; the four demonstration documents and focused checks do not complete the broader dataset or evaluation phases.
+The Phase 3 demonstration has passed its focused checks; see the roadmap for the milestone record. Phase 4 has 58 passing offline tests on the pinned runtime and passing hosted CI runs. Phases 5–8 remain planned; the four demonstration documents and focused checks do not complete the broader dataset or evaluation phases.

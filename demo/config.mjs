@@ -1,8 +1,12 @@
 import { readFileSync } from 'node:fs';
 
-const pinnedVersion = readFileSync(new URL('../.nvmrc', import.meta.url), 'utf8').trim();
-
 export function validateRuntime(version = process.versions.node) {
+  let pinnedVersion;
+  try {
+    pinnedVersion = readFileSync(new URL('../.nvmrc', import.meta.url), 'utf8').trim();
+  } catch {
+    throw new Error('Cannot read .nvmrc. Restore the repository root runtime pin and try again.');
+  }
   const expected = pinnedVersion.split('.').map(Number);
   const actual = version.split('.').map(Number);
   if (!/^\d+\.\d+\.\d+$/.test(version) || actual[0] !== expected[0] ||
