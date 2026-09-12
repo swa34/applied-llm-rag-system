@@ -12,5 +12,5 @@ export async function createDemo() {
   const { manifest, manifestSha256, chunks } = await loadDataset(corpusDirectory);
   const retriever = await LocalRetriever.create(chunks, provider);
   return { provider, retriever, dataset: { ...manifest, manifestSha256 },
-    newConversation: () => new Conversation({ provider, retriever }) };
+    newConversation: options => new Conversation({ provider, retriever, ...options }) };
 }

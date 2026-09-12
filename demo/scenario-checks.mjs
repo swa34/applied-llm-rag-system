@@ -6,13 +6,19 @@ const regex = pattern => new RegExp(pattern, 'iu');
 export async function loadDevelopmentChecks() {
   const dataset = await loadDataset();
   const suite = await loadCaseSuite(developmentSuitePath, dataset);
+  return { cases: compileChecks(suite, dataset), suite };
+}
+
+export function compileChecks(suite, dataset) {
   const chunks = new Map(dataset.chunks.map(chunk => [chunk.id, chunk]));
   const documentFiles = new Map(dataset.manifest.documents.map(document => [document.id, document.file]));
-  const cases = suite.cases.flatMap(testCase => testCase.turns.map(turn => {
+  return suite.cases.flatMap(testCase => testCase.turns.map((turn, turnIndex) => {
     const expected = turn.expected;
     return {
       id: turn.id,
       conversation: testCase.id,
+      tags: [...testCase.tags],
+      turnIndex,
       question: turn.question,
       status: expected.status,
       facts: (expected.facts ?? []).map(fact => ({
@@ -28,7 +34,6 @@ export async function loadDevelopmentChecks() {
       manualReviewReason: expected.manualReviewReason,
     };
   }));
-  return { cases, suite };
 }
 
 const normalize = text => text.replaceAll('’', "'")

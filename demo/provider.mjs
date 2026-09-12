@@ -74,21 +74,26 @@ export class OpenAIProvider {
       instructions, input: JSON.stringify(input),
       text: { format: { type: 'json_schema', name, strict: true, schema } },
     });
+    const failWithResponseMetadata = message => {
+      const error = new Error(message);
+      error.responseMetadata = { model: result.model ?? null, usage: result.usage ?? null };
+      throw error;
+    };
     if (result.status !== 'completed') {
       if (result.status === 'incomplete' && result.incomplete_details?.reason === 'max_output_tokens') {
-        throw new Error('OpenAI reached the output token limit before completing the response. Try a narrower question or increase the output token limit.');
+        failWithResponseMetadata('OpenAI reached the output token limit before completing the response. Try a narrower question or increase the output token limit.');
       }
       if (result.status === 'incomplete' && result.incomplete_details?.reason === 'content_filter') {
-        throw new Error('OpenAI stopped the response because of a content filter. Try rephrasing the question.');
+        failWithResponseMetadata('OpenAI stopped the response because of a content filter. Try rephrasing the question.');
       }
-      throw new Error('OpenAI did not complete the structured response.');
+      failWithResponseMetadata('OpenAI did not complete the structured response.');
     }
     const content = (result.output ?? []).flatMap(item => item.content ?? []);
-    if (content.some(item => item.type === 'refusal')) throw new Error('The model declined this request.');
+    if (content.some(item => item.type === 'refusal')) failWithResponseMetadata('The model declined this request.');
     const text = content.filter(item => item.type === 'output_text').map(item => item.text).join('');
     let value;
     try { value = JSON.parse(text); }
-    catch { throw new Error('OpenAI returned an invalid structured response.'); }
+    catch { failWithResponseMetadata('OpenAI returned an invalid structured response.'); }
     return { value, usage: result.usage, model: result.model };
   }
 

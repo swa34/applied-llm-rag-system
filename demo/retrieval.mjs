@@ -86,12 +86,13 @@ const terms = text => new Set((text.toLowerCase().match(/[a-z0-9]+/g) ?? []).fil
 
 export class LocalRetriever {
   static async create(chunks, embedder) {
+    const startedAt = new Date().toISOString();
     const start = performance.now();
     const embedding = await embedder.embed(chunks.map(chunk => `${chunk.title}\n${chunk.section}\n${chunk.text}`));
     if (embedding.vectors.length !== chunks.length) throw new Error('Embedding count does not match corpus.');
     return new LocalRetriever(chunks, embedding.vectors, embedder, {
       chunks: chunks.length, embeddingMs: performance.now() - start,
-      usage: embedding.usage, model: embedding.model,
+      startedAt, completedAt: new Date().toISOString(), usage: embedding.usage, model: embedding.model,
     });
   }
 

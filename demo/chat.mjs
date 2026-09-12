@@ -26,11 +26,33 @@ export function validateAnswer(value, matches) {
 }
 
 export class Conversation {
-  constructor({ provider, retriever }) {
+  constructor({ provider, retriever, observeStage = () => {} }) {
     this.provider = provider;
     this.retriever = retriever;
+    this.observeStage = observeStage;
     this.history = [];
     this.busy = false;
+  }
+
+  async runStage(stage, operation) {
+    const startedAt = new Date().toISOString();
+    const started = performance.now();
+    try {
+      const result = await operation();
+      try {
+        this.observeStage({ stage, status: 'completed', startedAt, completedAt: new Date().toISOString(),
+          durationMs: performance.now() - started, returnedModel: result?.model ?? null,
+          usage: result?.usage ?? null });
+      } catch {}
+      return result;
+    } catch (error) {
+      try {
+        this.observeStage({ stage, status: 'failed', startedAt, completedAt: new Date().toISOString(),
+          durationMs: performance.now() - started, returnedModel: error.responseMetadata?.model ?? null,
+          usage: error.responseMetadata?.usage ?? null });
+      } catch {}
+      throw error;
+    }
   }
 
   async send(question) {
@@ -41,7 +63,8 @@ export class Conversation {
     this.busy = true;
     try {
       const start = performance.now();
-      const resolution = await this.provider.resolve(question.trim(), structuredClone(this.history));
+      const resolution = await this.runStage('resolution', () =>
+        this.provider.resolve(question.trim(), structuredClone(this.history)));
       const timings = { resolutionMs: performance.now() - start, retrievalMs: 0, answerMs: 0 };
       const usage = { resolution: resolution.usage };
       let result;
@@ -49,13 +72,13 @@ export class Conversation {
         result = { status: 'clarify', answer: resolution.value.clarification, query: '', claims: [], citations: [], retrieved: [] };
       } else if (resolution.value?.action === 'retrieve' && resolution.value.query?.trim()) {
         const retrievalStart = performance.now();
-        const retrieval = await this.retriever.retrieve(resolution.value.query);
+        const retrieval = await this.runStage('queryEmbedding', () => this.retriever.retrieve(resolution.value.query));
         timings.retrievalMs = performance.now() - retrievalStart;
         usage.embedding = retrieval.usage;
         const answerStart = performance.now();
-        const generated = await this.provider.answer(resolution.value.query, retrieval.matches);
+        const generated = await this.runStage('answer', () => this.provider.answer(resolution.value.query, retrieval.matches));
         result = { ...validateAnswer(generated.value, retrieval.matches), query: resolution.value.query,
-          retrieved: retrieval.matches, model: generated.model };
+          retrieved: retrieval.matches, model: generated.model, embeddingModel: retrieval.model };
         timings.answerMs = performance.now() - answerStart;
         usage.answer = generated.usage;
       } else throw new Error('Invalid context resolution.');
