@@ -1,218 +1,100 @@
 # Applied LLM RAG System
 
-A production-grade Retrieval-Augmented Generation (RAG) platform demonstrating enterprise document processing, hybrid vector search, intelligent caching, and continuous learning from user feedback.
+**Scott Allen · AI engineering portfolio**
 
-**Author**: Scott Allen
+Finding a document is only part of answering a question. A useful assistant also has to choose the right passage, show where its answer came from, and handle the next question when the user leaves half of it unsaid.
 
-## Overview
+This independent reference project explores those problems through document processing, retrieval, caching, feedback, and streaming chat. It is informed by professional experience with institutional RAG systems. The showcase describes engineering choices in original prose; it is not a reproduction of an employer's production system.
 
-This repository showcases the architecture and implementation of a complete RAG pipeline, from document ingestion to real-time chat with streaming responses. Built for a production enterprise environment, it demonstrates practical solutions to real-world challenges in applied LLM engineering.
+**Current state:** component examples and an audited design. There is no runnable end-to-end chat application yet. Provider integration, retrieval quality, and performance have not been verified. The [feature matrix](docs/FEATURE_STATUS.md) separates the code that exists from the work still needed.
 
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                              DATA PIPELINE                                   │
-│                                                                              │
-│   Websites ──┬──► Python Crawlers ──┬──► Document Processor ──► Markdown     │ 
-│   Dropbox ───┤   (3 specialized)    │   (PDF/DOCX/PPTX/XLSX)      │          │
-│   Local ─────┘                      │                              │         │
-│                                     └──► Document Mapper ──────────┤         │
-│                                         (fuzzy matching)           │         │
-└────────────────────────────────────────────────────────────────────┼─────────┘
-                                                                     │
-┌────────────────────────────────────────────────────────────────────┼─────────┐
-│                              RAG ENGINE                            ▼         │
-│                                                                              │
-│   Ingestion ──► Vector DB ──► Hybrid Search ──► LLM Generation ──► Response  │
-│   (dense +      (Pinecone)    (dense + sparse   (with re-ranking)            │
-│    sparse)                     + metadata)                                   │
-│                                     │                                        │
-│                    ┌────────────────┴────────────────┐                       │
-│                    ▼                                 ▼                       │
-│              2-Tier Cache                    Feedback Learning               │
-│           (Redis + PostgreSQL)            (source scoring + patterns)        │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
+## What this demonstrates
 
-## Key Features
+- Preparing varied documents for retrieval, with attention to chunk boundaries and source metadata.
+- Combining semantic retrieval with keyword signals for names, acronyms, and exact terms.
+- Considering when reranking is worth another model call.
+- Examining how feedback and two cache tiers affect answer quality and freshness.
+- Designing for the harder conversational case: a follow-up that depends on an earlier question.
+- Checking claims against implementation and documenting failures before presenting results.
 
-### Document Processing (Python)
+## Capabilities at a glance
 
-| Component | Description |
-|-----------|-------------|
-| **Web Crawlers** | Three specialized crawlers: base (rate-limited), deep (sitemap-aware), authenticated (token-based with lockout prevention) |
-| **Document Processor** | Multi-format extraction from PDF, DOCX, PPTX, XLSX with table-to-markdown conversion |
-| **Cloud Storage** | Dropbox API integration with pagination, batch processing, and shared link generation |
-| **Document Mapper** | Cross-referencing system using fuzzy matching for document relationship detection |
+| Area | What is present | What remains |
+|---|---|---|
+| Document preparation | Python crawling, format extraction, cloud-storage, and mapping examples | Consistent entry points, safe boundaries, extraction tests |
+| Ingestion | Chunking, embedding calls, metadata, vector upserts | Reproducible setup, safe dry run, reliable document identity |
+| Retrieval | Dense and hashed keyword vectors, filters, conditional reranking | Provider compatibility and retrieval evaluation |
+| Cache and feedback | Redis/PostgreSQL operations and source-scoring logic | Cache schema, correctness fixes, contextual isolation, measured impact |
+| Streaming | Browser client for cached JSON and SSE responses | Server, accessible interface, protocol and cancellation fixes |
+| Custom follow-up chat | Client message history and a session identifier | Server-side context resolution, clarification, fresh evidence, conversation tests |
+| Grounding and evaluation | Source metadata and a documented evaluation plan | Answer generation, citation validation, refusal behavior, recorded results |
 
-### RAG Intelligence (Node.js)
+These are component-level descriptions, not claims of a working integrated service.
 
-| Component | Description |
-|-----------|-------------|
-| **Hybrid Search** | Combines dense (semantic) and sparse (keyword) vectors with configurable alpha blending |
-| **LLM Re-ranking** | GPT-5-mini powered re-ranking when top results have similar confidence scores |
-| **Two-Tier Cache** | Redis L1 + PostgreSQL L2 caching with protection for positive-feedback entries |
-| **Feedback Learning** | Continuous improvement through source scoring and query pattern learning |
-| **Streaming Client** | Intelligent response handling with instant cache hits or progressive SSE streaming |
+## Why follow-up chat deserves its own work
 
-## Repository Structure
+Consider a fictional conversation about travel rules:
 
-```
-applied-llm-rag-system/
-├── python/                      # Document processing layer
-│   ├── crawlers/
-│   │   ├── base_crawler.py      # Foundation with session pooling
-│   │   ├── deep_crawler.py      # Sitemap parsing + priority queue
-│   │   └── authenticated_crawler.py  # Token auth + lockout prevention
-│   ├── processors/
-│   │   ├── document_processor.py     # PDF/DOCX/PPTX/XLSX extraction
-│   │   └── cloud_storage_processor.py # Dropbox API integration
-│   ├── mapping/
-│   │   └── document_mapper.py   # Fuzzy matching cross-references
-│   └── requirements.txt
-│
-├── src/                         # Node.js RAG layer
-│   ├── retrieval/
-│   │   └── hybridSearch.js      # Dense + sparse + re-ranking
-│   ├── cache/
-│   │   └── tieredCache.js       # Redis L1 + PostgreSQL L2
-│   ├── feedback/
-│   │   ├── feedbackLearning.js  # Source scoring + patterns
-│   │   └── commentScorer.js     # Hybrid regex + LLM analysis
-│   ├── ingestion/
-│   │   └── documentIngestion.js # Vector DB ingestion pipeline
-│   └── streaming/
-│       └── chatStreamClient.js  # Browser SSE client
-│
-└── docs/
-    └── ARCHITECTURE.md          # Detailed system documentation
+> “Who approves an overnight trip?”
+>
+> “Does that change for part-time staff?”
+
+The second question does not name the trip or the approval rule. The assistant needs to recover that meaning, look for evidence about eligibility, and ask for clarification if the reference is ambiguous. It also needs to recognize when the user has changed subjects.
+
+Caching adds another constraint. The same follow-up wording after a different conversation can require a different answer. A cache keyed only by the latest question can return a plausible answer to the wrong question.
+
+This is a central design topic for the showcase. The existing client supplies a starting point for conversation handling, but the server-side behavior is **not implemented here**. The [design case study](docs/CASE_STUDY.md) explains the challenge and the checks a future independent demonstration should pass.
+
+## Architecture
+
+The diagram shows the intended relationship between existing examples and missing application work. Arrows describe a design, not a verified running pipeline.
+
+```mermaid
+flowchart LR
+    A[Document processing examples] --> B[Ingestion example]
+    B --> C[External vector index]
+    C --> D[Retrieval and reranking example]
+    E[Cache and feedback examples] -.-> D
+    F[Follow-up context resolution - planned] -.-> D
+    D -.-> G[Grounded answer server - planned]
+    G -.-> H[Streaming client example]
 ```
 
-## Technical Highlights
+Read the [architecture notes](docs/ARCHITECTURE.md) for integration gaps and the proposed conversation boundary.
 
-### Hybrid Search with Re-ranking
+## Reviewing this checkout
 
-```javascript
-// Alpha controls semantic vs keyword balance
-const alpha = 0.7;  // 0.0 = pure keyword, 1.0 = pure semantic
+Start with the [feature matrix](docs/FEATURE_STATUS.md), [limitations](docs/LIMITATIONS.md), and [security notes](docs/SECURITY.md). The source directories contain the examples reviewed by the audit; this documentation does not reproduce their code or prompts.
 
-// LLM re-ranking kicks in when scores are too close
-if (topScore - secondScore < RERANK_THRESHOLD) {
-  results = await rerankWithLLM(results, query);
-}
-```
+There is currently **no supported local demo command**. The repository has no Node.js package manifest, lockfile, chat server, or automated test suite. Python dependencies are listed in `python/requirements.txt`, but they are not locked and module entry points need repair. Runtime support has not been established through CI.
 
-### Two-Tier Cache Architecture
+The previous npm setup and ingestion instructions were not reproducible and have been removed. The existing ingestion `--dry` flag is also not a safe preview: it can still call paid APIs and perform requested remote index operations. Cloud processing can create public shared links. Do not connect these examples to real documents or production services.
 
-- **L1 (Redis)**: Sub-50ms response for hot queries
-- **L2 (PostgreSQL)**: Persistent storage for warm cache
-- **Protection**: Positive feedback and manual entries immune to eviction
+[.env.example](.env.example) is a placeholder configuration reference, not working setup instructions. A later approved phase will define a synthetic local demonstration, choose a provider, and supply tested commands.
 
-### Feedback Learning Loop
+## Evaluation and results
 
-1. User rates response (helpful/not-helpful)
-2. Comment analysis (regex patterns → LLM fallback for ambiguous cases)
-3. Source scores updated based on feedback
-4. Future retrievals adjusted by learned source quality
+Retrieval quality, citation correctness, groundedness, follow-up behavior, latency, and API cost are **not yet measured**. No accuracy, speed, or savings claims are made for this checkout.
 
-### Web Crawling Patterns
+The [evaluation plan](docs/EVALUATION.md) describes how to record both successful and failed cases, distinguish retrieval from answer quality, and make future results reproducible.
 
-- **Sitemap Index Support**: Handles nested sitemap structures
-- **Priority Queuing**: Higher priority URLs processed first
-- **Rate Limiting**: Configurable delays to avoid IP blocks
-- **Lockout Prevention**: Monitors for login redirects, backs off automatically
+## Project boundaries
 
-## Design Principles
+Use fictional or explicitly public sample material. Employer documents, application code, internal prompts, credentials, and confidential information do not belong in the showcase. See the [disclaimer and provenance policy](DISCLAIMER.md) and [security reporting policy](SECURITY.md).
 
-1. **Retrieval Quality > Prompt Engineering**: Better retrieved context beats clever prompts
-2. **Fail Gracefully**: Every component has fallback behavior
-3. **Learn Continuously**: User feedback improves future responses
-4. **Cache Aggressively**: Sub-100ms responses for common queries
-5. **Hybrid Approaches**: Dense + sparse search, regex + LLM scoring
+No standalone license file is present. The earlier README's MIT label did not establish the provenance of the existing material or supply a complete license. A license decision is deferred pending owner confirmation; this documentation does not grant additional rights.
 
-## Performance Characteristics
+## Roadmap
 
-| Operation | Target | Notes |
-|-----------|--------|-------|
-| Cache hit (Redis) | <50ms | ~15ms achieved |
-| Cache hit (PostgreSQL) | <100ms | ~45ms achieved |
-| Vector search | <500ms | Includes alpha blending |
-| Streaming first token | <500ms | SSE progressive display |
+The [phase tracker](tasks/todo.md) records approvals, completed work, and acceptance checks for all eight phases.
 
-## Technology Stack
+1. Audit the existing repository — complete.
+2. Correct documentation and establish an honest showcase — complete.
+3. Propose and build the smallest approved independent local demonstration.
+4. Add the infrastructure needed to reproduce it.
+5. Create a fictional corpus, including follow-up and adversarial questions.
+6. Run evaluations and publish results with their limitations.
+7. Review the implemented security controls and residual risks.
+8. Add a verified demonstration screenshot and finish the portfolio presentation.
 
-- **Python 3.9+**: Document processing, web crawling
-- **Node.js 18+**: RAG orchestration, API layer
-- **Pinecone**: Serverless vector database
-- **Redis**: L1 cache layer
-- **PostgreSQL**: L2 cache + feedback storage
-- **OpenAI**: Embeddings (text-embedding-3-large) + LLM (GPT-5-mini and nano)
-
-## What This Repository Demonstrates
-
-- Production-grade RAG architecture patterns
-- Multi-format document processing pipelines
-- Hybrid search strategies beyond naive similarity
-- Caching patterns for LLM applications
-- Continuous learning from user feedback
-- Enterprise crawling with authentication handling
-
-## What This Repository Does Not Include
-
-- Proprietary datasets or credentials
-- Production infrastructure configuration
-- Enterprise authentication systems
-- Internal prompts or domain-specific policies
-
-## Getting Started
-
-### Prerequisites
-
-```bash
-# Python dependencies
-pip install -r python/requirements.txt
-
-# Node.js dependencies
-npm install
-```
-
-### Environment Variables
-
-```bash
-# Vector Database
-PINECONE_API_KEY=your_key
-PINECONE_INDEX_NAME=your_index
-
-# OpenAI
-OPENAI_API_KEY=your_key
-EMBED_MODEL=text-embedding-3-large
-
-# Cache Layer
-REDIS_URL=redis://localhost:6379
-DB_HOST=localhost
-DB_DATABASE=rag_cache
-DB_USERNAME=user
-DB_PASSWORD=password
-```
-
-### Running Ingestion
-
-```bash
-# Ingest documents from a directory
-npm run ingest docs/
-
-# Dry run (no changes)
-npm run ingest -- --dry
-
-# Purge and re-ingest
-npm run ingest -- --purge
-```
-
-## Author
-
-**Scott Allen**
-
-This project is based on real-world production experience building enterprise RAG systems. The code has been sanitized and generalized for public sharing while preserving the architectural patterns and technical approaches.
-
-## License
-
-MIT (reference implementation only)
+Later phases have not started. Each requires approval before implementation.
