@@ -40,6 +40,33 @@ test('full-time tuition exclusion after six months is rejected but the waiting p
   assert.deepEqual(checkScenario(scenario, waiting), []);
 });
 
+test('tuition eligibility accepts can receive while retaining the source, waiting period, and exclusion checks', () => {
+  const scenario = cases.find(item => item.id === 'tuition-direct');
+  const tuition = { ...travel, id: 'tuition#4', file: 'tuition.md', section: 'Tuition assistance eligibility', text: 'Full-time employees become eligible for tuition assistance after six months of employment.' };
+  const text = 'Full-time employees can receive tuition assistance after six months of employment.';
+  assert.deepEqual(checkScenario(scenario, resultFor([text], [tuition])), []);
+  assert.ok(checkScenario(scenario, resultFor([text], [travel])).includes('Missing citation to Tuition assistance eligibility.'));
+  assert.ok(checkScenario(scenario, resultFor(['Full-time employees can receive tuition assistance.'], [tuition])).includes('Missing expected fact supported by Tuition assistance eligibility.'));
+  for (const exclusion of ['cannot receive', "can't receive", 'can not receive']) {
+    const wrong = resultFor([`Full-time employees ${exclusion} tuition assistance after six months of employment.`], [tuition]);
+    assert.ok(checkScenario(scenario, wrong).includes('Answer contradicts a known fixture rule.'), exclusion);
+  }
+  const waiting = resultFor(['Full-time employees cannot receive tuition assistance until they complete six months of employment, when they can receive it.'], [tuition]);
+  assert.deepEqual(checkScenario(scenario, waiting), []);
+});
+
+test('purchasing accepts signs off and rejects reversed approval requirements', () => {
+  const scenario = cases.find(item => item.id === 'clarification-reply');
+  const text = 'The department head signs off on purchase requests before an employee places an order.';
+  assert.deepEqual(checkScenario(scenario, resultFor([text], [purchase])), []);
+  assert.ok(checkScenario(scenario, resultFor([text], [travel])).includes('Missing citation to Purchasing approval.'));
+  for (const wrong of [
+    'The department head signs off on purchase requests but this is not required.',
+    "The department head's sign-off is not required before an employee places an order.",
+    'The department head must not sign off on purchase requests.',
+  ]) assert.ok(checkScenario(scenario, resultFor([wrong], [purchase])).includes('Answer contradicts a known fixture rule.'), wrong);
+});
+
 test('comparison requires factual claims linked to each of the two sources', () => {
   const comparison = cases.find(item => item.id === 'comparison');
   assert.deepEqual(checkScenario(comparison, resultFor([travel.text, purchase.text], [travel, purchase])), []);

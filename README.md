@@ -6,7 +6,7 @@ Finding a document is only part of answering a question. A useful assistant also
 
 This independent reference project explores those problems through document processing, retrieval, caching, feedback, and streaming chat. It is informed by professional experience with institutional RAG systems. The showcase describes engineering choices in original prose; it is not a reproduction of an employer's production system.
 
-**Current state:** an independent Phase 3 terminal RAG demonstration now accompanies the original component examples and audited design. The demo uses fictional Markdown documents, a local index, and hosted OpenAI inference. Ten focused live checks passed on 2026-09-12. The [local demo guide](docs/LOCAL_DEMO.md) supplies commands and limits, and the [feature matrix](docs/FEATURE_STATUS.md) separates this new work from the unchanged original examples.
+**Current state:** an independent Phase 3 terminal RAG demonstration now accompanies the original component examples and audited design. The demo uses fictional Markdown documents, a local index, and hosted OpenAI inference. Ten focused live scenarios passed for each of GPT-5.6 Terra and Luna on 2026-09-12. The [local demo guide](docs/LOCAL_DEMO.md) supplies commands and limits, and the [feature matrix](docs/FEATURE_STATUS.md) separates this new work from the unchanged original examples.
 
 ## What this demonstrates
 
@@ -68,9 +68,9 @@ The separate Phase 3 demo loads fictional Markdown into an in-memory index, reso
 
 Start with the [feature matrix](docs/FEATURE_STATUS.md), [limitations](docs/LIMITATIONS.md), and [security notes](docs/SECURITY.md). The source directories contain the examples reviewed by the audit; this documentation does not reproduce their code or prompts.
 
-For the independent demo, use Node.js 22.9 or newer with an existing `OPENAI_API_KEY` in the ignored root `.env` file. No npm dependency installation is required. Run `npm run demo` for interactive chat, `npm run demo -- "Who approves an overnight trip?"` for one question, `npm run demo:cases` for live scenarios, and `npm test` for offline checks. Hosted inference incurs API usage charges. See the [local demo guide](docs/LOCAL_DEMO.md) for configuration and output details.
+For the independent demo, use Node.js 24.21.0 from `.nvmrc` with an existing `OPENAI_API_KEY` in the process environment or a locally ignored root `.env` file (see the setup guide). No npm dependency installation is required. Run `npm run check` for offline runtime/corpus checks and `npm run demo:check` for local configuration validation. Run `npm run demo` for interactive chat, `npm run demo -- "Who approves an overnight trip?"` for one question, `npm run demo:cases` for live scenarios, and `npm test` for offline checks. Generation defaults to GPT-5.6 Terra; set `DEMO_MODEL=gpt-5.6-luna` to use Luna. Hosted inference incurs API usage charges. See the [local demo guide](docs/LOCAL_DEMO.md) for configuration and output details.
 
-The root package manifest and tests cover `demo/` only. The original components still lack a resolved dependency setup and chat server. Python dependencies in `python/requirements.txt` are not locked, module entry points need repair, and CI has not established runtime support.
+The root package manifest and tests cover `demo/` only. The original components still lack a resolved dependency setup and chat server. Python dependencies in `python/requirements.txt` are not locked and module entry points need repair. The new demo CI workflow uses the pinned Node runtime and offline checks; its first hosted push and pull-request runs passed.
 
 The previous npm setup and ingestion instructions were not reproducible and have been removed. The existing ingestion `--dry` flag is also not a safe preview: it can still call paid APIs and perform requested remote index operations. Cloud processing can create public shared links. Do not connect these examples to real documents or production services.
 
@@ -78,7 +78,7 @@ The previous npm setup and ingestion instructions were not reproducible and have
 
 ## Evaluation and results
 
-The demo records resolved queries, retrieved sources, timing, and API usage for inspection. Ten focused live checks passed on 2026-09-12; the [verification record](docs/LOCAL_DEMO.md#verification-record) includes earlier failed prompt revisions and the limits of these checks. There is no formal benchmark of retrieval quality, groundedness, follow-up reliability, latency, or API cost, and no accuracy, speed, or savings claim.
+The demo records resolved queries, retrieved sources, timing, and API usage for inspection. Ten focused live scenarios passed for each of GPT-5.6 Terra and Luna on 2026-09-12; the [verification record](docs/LOCAL_DEMO.md#verification-record) includes earlier failed prompt revisions and the limits of these checks. There is no formal benchmark of retrieval quality, groundedness, follow-up reliability, latency, or API cost, and no accuracy, speed, or savings claim.
 
 The [evaluation plan](docs/EVALUATION.md) describes how to record both successful and failed cases, distinguish retrieval from answer quality, and make future results reproducible.
 
@@ -95,10 +95,10 @@ The [roadmap](ROADMAP.md) records the scope, status, and completion criteria for
 1. Audit the existing repository — complete.
 2. Correct documentation and establish an honest showcase — complete.
 3. Build a small independent local demonstration.
-4. Add the infrastructure needed to reproduce it.
+4. Add reproducible demo infrastructure — complete; verified locally and in GitHub Actions.
 5. Create a fictional corpus, including follow-up and adversarial questions.
 6. Run evaluations and publish results with their limitations.
 7. Review the implemented security controls and residual risks.
 8. Add a verified demonstration screenshot and finish the portfolio presentation.
 
-The Phase 3 demonstration has passed its focused checks; see the roadmap for the milestone record. Phases 4–8 remain planned; the four demonstration documents and focused checks do not complete the broader dataset or evaluation phases.
+The Phase 3 demonstration has passed its focused checks; see the roadmap for the milestone record. Phase 4 has 58 passing offline tests on the pinned runtime and passing hosted CI runs. Phases 5–8 remain planned; the four demonstration documents and focused checks do not complete the broader dataset or evaluation phases.

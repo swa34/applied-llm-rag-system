@@ -62,12 +62,29 @@ test('answer request includes only supplied evidence fields and enforces claim s
   assert.deepEqual(schema.properties.claims.items.required, ['text', 'sourceId', 'quote']);
 });
 
+test('Terra and Luna preserve non-reasoning structured requests and omit temperature', async () => {
+  for (const model of ['gpt-5.6-terra', 'gpt-5.6-luna']) {
+    const { provider, calls } = mockProvider(completed({}), model);
+    await provider.resolve('Question', []);
+    await provider.answer('Question', []);
+    for (const request of calls) {
+      assert.equal(request.body.model, model);
+      assert.deepEqual(request.body.reasoning, { effort: 'none' });
+      assert.equal(Object.hasOwn(request.body, 'temperature'), false);
+      assert.equal(request.body.text.format.strict, true);
+      assert.equal(request.body.store, false);
+    }
+    assert.deepEqual(calls.map(request => request.body.max_output_tokens), [512, 4096]);
+  }
+});
+
 test('temperature is restricted to known GPT-4.1 and GPT-4o models and snapshots', async () => {
   for (const model of ['gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-4.1-mini-2025-04-14',
     'gpt-4o', 'gpt-4o-mini', 'gpt-4o-2024-08-06', 'gpt-4o-mini-2024-07-18']) {
     const { provider, calls } = mockProvider(completed({}), model);
     await provider.resolve('Question', []);
     assert.equal(calls[0].body.temperature, 0, model);
+    assert.equal(Object.hasOwn(calls[0].body, 'reasoning'), false, model);
   }
   for (const model of ['gpt-5', 'o3', 'fake-model', 'gpt-4o-search-preview', 'gpt-4.10']) {
     const { provider, calls } = mockProvider(completed({}), model);
@@ -150,3 +167,36 @@ test('transport exceptions and invalid JSON are redacted', async () => {
   }) });
   await assert.rejects(malformed.resolve('Question', []), { message: 'OpenAI returned invalid JSON.' });
 });
+
+for (const stage of ['fetch', 'response body']) {
+  test(`deadline aborts ${stage} without retries and the next request succeeds`, { timeout: 1000 }, async t => {
+    const timeout = AbortSignal.timeout.bind(AbortSignal);
+    t.mock.method(AbortSignal, 'timeout', milliseconds => {
+      assert.equal(milliseconds, 30_000);
+      return timeout(5);
+    });
+    // AbortSignal deadlines are unref'ed; keep the event loop alive for this test.
+    const keepAlive = setInterval(() => {}, 1000);
+    t.after(() => clearInterval(keepAlive));
+    let attempts = 0;
+    let expiredSignal;
+    const value = { action: 'retrieve', query: 'annual leave', clarification: '' };
+    const provider = new OpenAIProvider({ apiKey: 'test-only-key', fetchImpl: async (url, { signal }) => {
+      attempts++;
+      if (attempts > 1) return { ok: true, json: async () => completed(value) };
+      expiredSignal = signal;
+      const aborted = () => new Promise((resolve, reject) => {
+        signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+      });
+      if (stage === 'fetch') return aborted();
+      return { ok: true, json: aborted };
+    } });
+    await assert.rejects(provider.resolve('private request content', []), {
+      message: 'OpenAI request failed or timed out; check connectivity and retry.',
+    });
+    assert.equal(expiredSignal.aborted, true);
+    assert.equal(attempts, 1);
+    assert.deepEqual((await provider.resolve('Retry', [])).value, value);
+    assert.equal(attempts, 2);
+  });
+}
