@@ -17,9 +17,15 @@ flowchart TD
     V --> O[Terminal answer, citations, and diagnostics]
 ```
 
-`demo/retrieval.mjs` loads heading-based passages, embeds them at startup, and combines cosine and keyword ranks with reciprocal rank fusion to select six passages. `demo/provider.mjs` calls OpenAI for embeddings and structured context/answer responses. `demo/chat.mjs` retains at most six completed exchanges, retrieves again for each resolved question, and validates source membership and exact quote text. Those checks do not prove semantic support for a claim.
+`demo/retrieval.mjs` loads heading-based passages capped at 1,800 characters, splitting long lines while preserving exact text and source lines. It embeds the passages at startup and caches normalized vectors and keyword sets. Retrieval combines cosine and distinct keyword-overlap ranks with reciprocal rank fusion to select six passages. Keyword overlap has no inverse document frequency or length normalization; it favors broader query-term coverage and is not BM25.
+
+`demo/provider.mjs` calls OpenAI for embeddings and structured responses, with output limits of 512 tokens for context resolution and 4,096 for answers. It reports recognized incomplete-response causes without exposing raw details and provides rate-or-quota guidance for HTTP 429 without reading error bodies or retrying automatically. Temperature is set only for the standard GPT-4.1/GPT-4o variants and dated snapshots described in [LOCAL_DEMO.md](LOCAL_DEMO.md); only the default model configuration has been live-tested.
+
+`demo/chat.mjs` retains at most six completed exchanges, retrieves again for each resolved question, and validates source membership and exact quote text. Citation entries are grouped by source and retain their evidence in `quotes` arrays. Returned claims retain their individual source, quote, and citation number. Those checks do not prove semantic support for a claim.
 
 `demo/cli.mjs` provides interactive and one-question commands; the scenario runner exercises the fictional conversations. Ten focused live checks passed on 2026-09-12; see [LOCAL_DEMO.md](LOCAL_DEMO.md#verification-record). There is no answer cache, persistent index, streaming server, or browser interface in this slice. See [LOCAL_DEMO.md](LOCAL_DEMO.md) for commands, diagnostics, and provider tradeoffs.
+
+The CLI writes answers and citations to stdout and sends its banner, prompts, diagnostics, and errors to stderr. Successful interactive turns clear earlier turn failures from the exit status; piped input retains a nonzero exit status if any turn fails. Scenario checks use source-specific fixture facts and known contradiction patterns, which do not constitute a semantic correctness evaluation. Verification of the PR review changes is recorded separately from the original run in the [demo guide](LOCAL_DEMO.md#pr-review-verification).
 
 ## Original document preparation and retrieval
 

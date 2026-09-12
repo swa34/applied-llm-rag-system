@@ -16,7 +16,8 @@ const generated = () => ({ value: structuredClone(answer), model: 'fake-answer',
 test('validated answers carry exact evidence and source locations', () => {
   assert.deepEqual(validateAnswer(answer, [source]), {
     status: 'answered', answer: `${source.text} [1]`,
-    citations: [{ id: source.id, file: source.file, section: source.section, line: 4, quote: source.text }],
+    claims: [{ ...answer.claims[0], citation: 1 }],
+    citations: [{ id: source.id, file: source.file, section: source.section, line: 4, quotes: [source.text] }],
   });
 });
 

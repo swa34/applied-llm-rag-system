@@ -4,18 +4,25 @@ export function validateAnswer(value, matches) {
   }
   if (value.status === 'insufficient_evidence') {
     if (value.claims.length) throw new Error('Insufficient-evidence response contains claims.');
-    return { status: value.status, answer: 'The retrieved documents do not provide enough evidence to answer that question.', citations: [] };
+    return { status: value.status, answer: 'The retrieved documents do not provide enough evidence to answer that question.', claims: [], citations: [] };
   }
   if (!value.claims.length) throw new Error('An answered response must include supported claims.');
-  const citations = value.claims.map(claim => {
+  const citations = [];
+  const claims = value.claims.map(claim => {
     const source = matches.find(match => match.id === claim.sourceId);
     if (!source || typeof claim.text !== 'string' || !claim.text.trim() ||
       typeof claim.quote !== 'string' || !claim.quote.trim() || !source.text.includes(claim.quote)) {
       throw new Error('Citation validation failed: source or exact evidence quote is invalid.');
     }
-    return { id: source.id, file: source.file, section: source.section, line: source.line, quote: claim.quote };
+    let index = citations.findIndex(citation => citation.id === source.id);
+    if (index === -1) {
+      index = citations.length;
+      citations.push({ id: source.id, file: source.file, section: source.section, line: source.line, quotes: [] });
+    }
+    if (!citations[index].quotes.includes(claim.quote)) citations[index].quotes.push(claim.quote);
+    return { text: claim.text, sourceId: source.id, quote: claim.quote, citation: index + 1 };
   });
-  return { status: 'answered', answer: value.claims.map((claim, i) => `${claim.text} [${i + 1}]`).join('\n'), citations };
+  return { status: 'answered', answer: claims.map(claim => `${claim.text} [${claim.citation}]`).join('\n'), claims, citations };
 }
 
 export class Conversation {
@@ -39,7 +46,7 @@ export class Conversation {
       const usage = { resolution: resolution.usage };
       let result;
       if (resolution.value?.action === 'clarify' && resolution.value.clarification?.trim()) {
-        result = { status: 'clarify', answer: resolution.value.clarification, query: '', citations: [], retrieved: [] };
+        result = { status: 'clarify', answer: resolution.value.clarification, query: '', claims: [], citations: [], retrieved: [] };
       } else if (resolution.value?.action === 'retrieve' && resolution.value.query?.trim()) {
         const retrievalStart = performance.now();
         const retrieval = await this.retriever.retrieve(resolution.value.query);

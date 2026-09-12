@@ -10,6 +10,12 @@ The [local demo guide](LOCAL_DEMO.md) documents Node.js 22.9 or newer, an existi
 
 The demo rebuilds an in-memory index on every start, calls hosted inference, and retains at most six completed exchanges per conversation. It has no answer cache, streaming interface, or legacy service integration. Citation checks establish retrieved source membership and exact quotation text; they do not prove that a quote supports its attached claim. Model decisions and retrieval coverage remain fallible.
 
+The index caches normalized vectors and keyword sets, but lexical ranking remains a count of distinct shared terms. It has no inverse document frequency or length normalization and favors passages that cover more query terms. It is not BM25. Long source lines are split into passages of at most 1,800 characters with exact text and source-line references preserved; that size bound alone does not establish ideal semantic boundaries.
+
+Grouping citations by source preserves each claim's quote and reference, but does not validate its reasoning. The scenario checks require source-specific fixture facts and reject known contradictions or negations; unfamiliar wording and unsupported claims can still evade pattern checks. The historical ten-check result predates these review changes; see the separate [review verification record](LOCAL_DEMO.md#pr-review-verification).
+
+Only the default model configuration has been live-tested. Other models must support the demo's structured Responses request and output limits. Temperature is omitted outside the recognized standard GPT-4.1/GPT-4o aliases and dated snapshots, but this does not ensure compatibility. Resolver and answer output limits are 512 and 4,096 tokens respectively; either can be exhausted. Incomplete responses fail with sanitized explanations. HTTP 429 guidance distinguishes possible rate and quota issues without inspecting the error body, so it cannot diagnose which occurred. There are no automatic retries.
+
 ## Original component setup and integration
 
 - Original JavaScript components import external packages without a resolved dependency setup or lockfile; the root demo manifest does not install those dependencies.

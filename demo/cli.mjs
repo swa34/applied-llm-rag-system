@@ -1,46 +1,57 @@
 import { createInterface } from 'node:readline';
+import { pathToFileURL } from 'node:url';
 import { createDemo } from './setup.mjs';
 
-function display(result) {
-  console.log(`\n${result.answer}`);
+function display(result, stdout, stderr) {
+  stdout.write(`${result.answer}\n`);
   result.citations.forEach((source, i) => {
-    console.log(`[${i + 1}] sample-data/fictional/${source.file}:${source.line} — ${source.section}\n    ${source.quote}`);
+    stdout.write(`[${i + 1}] sample-data/fictional/${source.file}:${source.line} — ${source.section}\n`);
+    source.quotes.forEach(quote => stdout.write(`    ${quote}\n`));
   });
-  console.log(JSON.stringify({ status: result.status, resolvedQuery: result.query,
-    retrievedIds: result.retrieved.map(item => item.id), timings: result.timings, usage: result.usage }, null, 2));
+  stderr.write(JSON.stringify({ status: result.status, resolvedQuery: result.query,
+    retrievedIds: result.retrieved.map(item => item.id), timings: result.timings, usage: result.usage }, null, 2) + '\n');
 }
 
-async function main() {
-  const args = process.argv.slice(2);
+export async function runCli({ args = process.argv.slice(2), stdin = process.stdin,
+  stdout = process.stdout, stderr = process.stderr, setup = createDemo } = {}) {
   if (args.includes('--help')) {
-    console.log('npm run demo -- "question"\nnpm run demo  (interactive: /new, /exit)\nnpm run demo:cases  (live fictional scenarios; uses paid OpenAI APIs)');
-    return;
+    stdout.write('npm run demo -- "question"\nnpm run demo  (interactive: /new, /exit)\nnpm run demo:cases  (live fictional scenarios; uses paid OpenAI APIs)\n');
+    return 0;
   }
-  console.log('Fictional document demo — hosted OpenAI inference; API usage is billed.');
-  const demo = await createDemo();
-  console.log('Index:', JSON.stringify(demo.retriever.diagnostics));
+  stderr.write('Fictional document demo — hosted OpenAI inference; API usage is billed.\n');
+  const demo = await setup();
+  stderr.write(`Index: ${JSON.stringify(demo.retriever.diagnostics)}\n`);
   let conversation = demo.newConversation();
   if (args.length) {
-    display(await conversation.send(args.join(' ')));
-    return;
+    display(await conversation.send(args.join(' ')), stdout, stderr);
+    return 0;
   }
-  const input = createInterface({ input: process.stdin, output: process.stdout, terminal: Boolean(process.stdin.isTTY) });
-  console.log('Ask about the fictional policies. /new starts a fresh conversation; /exit quits.');
-  if (process.stdin.isTTY) input.setPrompt('You> ');
-  if (process.stdin.isTTY) input.prompt();
+  const interactive = Boolean(stdin.isTTY);
+  const input = createInterface({ input: stdin, output: stderr, terminal: interactive });
+  let inputClosed = false;
+  input.once('close', () => { inputClosed = true; });
+  stderr.write('Ask about the fictional policies. /new starts a fresh conversation; /exit quits.\n');
+  if (interactive) { input.setPrompt('You> '); input.prompt(); }
+  let exitCode = 0;
   try {
     for await (const line of input) {
       const question = line.trim();
       if (question === '/exit') break;
       if (question === '/new') {
-        conversation = demo.newConversation(); console.log('Started a new conversation.');
+        conversation = demo.newConversation(); stderr.write('Started a new conversation.\n');
       } else if (question) {
-        try { display(await conversation.send(question)); }
-        catch (error) { console.error(error.message); process.exitCode = 1; }
+        try {
+          display(await conversation.send(question), stdout, stderr);
+          if (interactive) exitCode = 0;
+        } catch (error) { stderr.write(error.message + '\n'); exitCode = 1; }
       }
-      if (process.stdin.isTTY) input.prompt();
+      if (interactive && !inputClosed) input.prompt();
     }
   } finally { input.close(); }
+  return exitCode;
 }
 
-main().catch(error => { console.error(error.message); process.exitCode = 1; });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  runCli().then(code => { process.exitCode = code; })
+    .catch(error => { console.error(error.message); process.exitCode = 1; });
+}

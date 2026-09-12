@@ -37,7 +37,12 @@ export class OpenAIProvider {
       throw new Error('OpenAI request failed or timed out; check connectivity and retry.');
     }
     // Provider bodies can echo request material; keep errors out of the transcript.
-    if (!response.ok) throw new Error(`OpenAI ${endpoint} request failed (HTTP ${response.status}).`);
+    if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error('OpenAI request failed (HTTP 429): rate or quota limit reached. Retry later for rate limits; check API credits and spending limits for quota issues.');
+      }
+      throw new Error(`OpenAI ${endpoint} request failed (HTTP ${response.status}).`);
+    }
     try { return await response.json(); }
     catch { throw new Error('OpenAI returned invalid JSON.'); }
   }
@@ -54,14 +59,23 @@ export class OpenAIProvider {
     return { vectors: sorted.map(item => item.embedding), usage: result.usage, model: result.model };
   }
 
-  async structured(name, schema, instructions, input) {
+  async structured(name, schema, instructions, input, maxOutputTokens) {
     const result = await this.request('responses', {
-      model: this.model, store: false, temperature: 0,
-      max_output_tokens: 1800,
+      model: this.model, store: false,
+      ...(/^gpt-(?:4\.1(?:-mini|-nano)?|4o(?:-mini)?)(?:-\d{4}-\d{2}-\d{2})?$/.test(this.model) ? { temperature: 0 } : {}),
+      max_output_tokens: maxOutputTokens,
       instructions, input: JSON.stringify(input),
       text: { format: { type: 'json_schema', name, strict: true, schema } },
     });
-    if (result.status !== 'completed') throw new Error('OpenAI did not complete the structured response.');
+    if (result.status !== 'completed') {
+      if (result.status === 'incomplete' && result.incomplete_details?.reason === 'max_output_tokens') {
+        throw new Error('OpenAI reached the output token limit before completing the response. Try a narrower question or increase the output token limit.');
+      }
+      if (result.status === 'incomplete' && result.incomplete_details?.reason === 'content_filter') {
+        throw new Error('OpenAI stopped the response because of a content filter. Try rephrasing the question.');
+      }
+      throw new Error('OpenAI did not complete the structured response.');
+    }
     const content = (result.output ?? []).flatMap(item => item.content ?? []);
     if (content.some(item => item.type === 'refusal')) throw new Error('The model declined this request.');
     const text = content.filter(item => item.type === 'output_text').map(item => item.text).join('');
@@ -88,7 +102,7 @@ request about "both" or named subjects may retrieve without clarification.
 Otherwise return action retrieve, a standalone query that preserves the user's exact intent
 and conditions, and an empty clarification. Do not answer questions or invent policy facts.
 A user's response to a clarification should resolve the original pending question.`,
-      { history, question });
+      { history, question }, 512);
   }
 
   answer(query, matches) {
@@ -102,6 +116,6 @@ claims. Each claim must contain one factual statement, the supporting evidence s
 and an exact, nonempty quote from that passage's text supporting the entire claim.
 For a comparison, provide separately supported claims for each topic. Do not invent source
 identifiers, URLs, or quotations. All factual answer text must appear in the claims array.`,
-      { question: query, evidence: matches.map(({ id, file, section, text }) => ({ sourceId: id, file, section, text })) });
+      { question: query, evidence: matches.map(({ id, file, section, text }) => ({ sourceId: id, file, section, text })) }, 4096);
   }
 }

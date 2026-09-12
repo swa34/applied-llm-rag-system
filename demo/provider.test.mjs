@@ -4,9 +4,9 @@ import { OpenAIProvider } from './provider.mjs';
 
 const completed = value => ({ status: 'completed', model: 'fake-model', usage: { output_tokens: 7 },
   output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(value) }] }] });
-const mockProvider = payload => {
+const mockProvider = (payload, model = 'fake-model') => {
   const calls = [];
-  const provider = new OpenAIProvider({ apiKey: 'test-only-key', model: 'fake-model', embeddingModel: 'fake-embedding',
+  const provider = new OpenAIProvider({ apiKey: 'test-only-key', model, embeddingModel: 'fake-embedding',
     fetchImpl: async (url, options) => { calls.push({ url, ...options, body: JSON.parse(options.body) });
       return { ok: true, json: async () => payload }; },
   });
@@ -34,6 +34,7 @@ test('resolution uses strict REST schema, disables storage, and keeps history in
   assert.ok(request.signal instanceof AbortSignal);
   assert.equal(request.body.store, false);
   assert.equal(request.body.model, 'fake-model');
+  assert.equal(request.body.max_output_tokens, 512);
   assert.deepEqual(JSON.parse(request.body.input), { history, question: 'How many days?' });
   const format = request.body.text.format;
   assert.equal(format.type, 'json_schema');
@@ -50,6 +51,7 @@ test('answer request includes only supplied evidence fields and enforces claim s
     score: 0.2, line: 4, internal: 'not evidence' }]);
   const body = calls[0].body;
   assert.equal(body.store, false);
+  assert.equal(body.max_output_tokens, 4096);
   assert.deepEqual(JSON.parse(body.input), { question: 'Annual leave?', evidence: [
     { sourceId: 'leave#1', file: 'leave.md', section: 'Allowance', text: '20 days.' },
   ] });
@@ -58,6 +60,20 @@ test('answer request includes only supplied evidence fields and enforces claim s
   assert.equal(schema.additionalProperties, false);
   assert.equal(schema.properties.claims.items.additionalProperties, false);
   assert.deepEqual(schema.properties.claims.items.required, ['text', 'sourceId', 'quote']);
+});
+
+test('temperature is restricted to known GPT-4.1 and GPT-4o models and snapshots', async () => {
+  for (const model of ['gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-4.1-mini-2025-04-14',
+    'gpt-4o', 'gpt-4o-mini', 'gpt-4o-2024-08-06', 'gpt-4o-mini-2024-07-18']) {
+    const { provider, calls } = mockProvider(completed({}), model);
+    await provider.resolve('Question', []);
+    assert.equal(calls[0].body.temperature, 0, model);
+  }
+  for (const model of ['gpt-5', 'o3', 'fake-model', 'gpt-4o-search-preview', 'gpt-4.10']) {
+    const { provider, calls } = mockProvider(completed({}), model);
+    await provider.resolve('Question', []);
+    assert.equal(Object.hasOwn(calls[0].body, 'temperature'), false, model);
+  }
 });
 
 test('embeddings restore input order and preserve usage', async () => {
@@ -94,16 +110,32 @@ test('refusals, incomplete responses, and invalid structured text are rejected',
   }
 });
 
-test('HTTP errors do not read or reveal provider response bodies', async () => {
-  let bodyRead = false;
-  const provider = new OpenAIProvider({ apiKey: 'test-only-key', fetchImpl: async () => ({
-    ok: false, status: 429, json: async () => { bodyRead = true; return { message: 'private request content' }; },
-    text: async () => { bodyRead = true; return 'private request content'; },
-  }) });
-  await assert.rejects(provider.resolve('private request content', []), {
-    message: 'OpenAI responses request failed (HTTP 429).',
-  });
-  assert.equal(bodyRead, false);
+test('incomplete responses explain recognized causes without exposing provider details', async () => {
+  const cases = [
+    ['max_output_tokens', 'OpenAI reached the output token limit before completing the response. Try a narrower question or increase the output token limit.'],
+    ['content_filter', 'OpenAI stopped the response because of a content filter. Try rephrasing the question.'],
+    ['private request content test-only-key', 'OpenAI did not complete the structured response.'],
+  ];
+  for (const [reason, message] of cases) {
+    const { provider } = mockProvider({ ...completed({}), status: 'incomplete',
+      incomplete_details: { reason, message: 'private request content test-only-key' } });
+    await assert.rejects(provider.resolve('private request content', []), { message });
+  }
+});
+
+test('HTTP errors give safe guidance without reading provider response bodies', async () => {
+  for (const [status, message] of [
+    [429, 'OpenAI request failed (HTTP 429): rate or quota limit reached. Retry later for rate limits; check API credits and spending limits for quota issues.'],
+    [500, 'OpenAI responses request failed (HTTP 500).'],
+  ]) {
+    let bodyRead = false;
+    const provider = new OpenAIProvider({ apiKey: 'test-only-key', fetchImpl: async () => ({
+      ok: false, status, json: async () => { bodyRead = true; return { message: 'private request content' }; },
+      text: async () => { bodyRead = true; return 'private request content'; },
+    }) });
+    await assert.rejects(provider.resolve('private request content', []), { message });
+    assert.equal(bodyRead, false);
+  }
 });
 
 test('transport exceptions and invalid JSON are redacted', async () => {
