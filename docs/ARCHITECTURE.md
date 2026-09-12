@@ -1,319 +1,80 @@
-# System Architecture
+# Architecture
 
-This document provides a comprehensive overview of the Applied LLM RAG System architecture.
+This repository contains component examples for an institutional document assistant. It does not yet connect them into a running application. This document explains the intended relationships and where integration work remains.
 
-## High-Level Architecture
+## Document preparation and retrieval
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           DOCUMENT SOURCES                                  │
-├───────────────┬───────────────┬───────────────┬─────────────────────────────┤
-│   Websites    │   Dropbox     │   Local Files │   Other APIs                │
-│   (crawled)   │   (API)       │   (PDF/DOCX)  │   (extensible)              │
-└───────┬───────┴───────┬───────┴───────┬───────┴───────────────┬─────────────┘
-        │               │               │                       │
-        ▼               ▼               ▼                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        PYTHON PROCESSING LAYER                              │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
-│  │   Crawlers  │  │  Document   │  │   Cloud     │  │    Document         │ │
-│  │   (3 types) │  │  Processor  │  │   Storage   │  │    Mapper           │ │
-│  │             │  │  (4 formats)│  │  Processor  │  │  (fuzzy matching)   │ │
-│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────────────┘ │
-└────────────────────────────────────────┬────────────────────────────────────┘
-                                         │ Markdown files
-                                         ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        NODE.JS INGESTION LAYER                              │
-│  ┌─────────────────────────────────────────────────────────────────────────┐│
-│  │                    Document Ingestion Pipeline                           │ 
-│  │  • Chunking with overlap                                                 │ 
-│  │  • Dense embeddings (OpenAI text-embedding-3-large)                      │ 
-│  │  • Sparse vectors (term frequency hashing)                               │
-│  │  • Metadata enhancement                                                  │ 
-│  │  • Duplicate detection                                                   │ 
-│  └─────────────────────────────────────────────────────────────────────────┘|
-└────────────────────────────────────────┬────────────────────────────────────┘
-                                         │
-                                         ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           VECTOR DATABASE                                   │
-│                           (Pinecone)                                        │
-│  ┌─────────────────────────────────────────────────────────────────────────┐│
-│  │  • Dense vectors (3072 dimensions)                                       │ 
-│  │  • Sparse vectors (keyword indices)                                      │ 
-│  │  • Rich metadata (source, category, priority, dates)                     │
-│  └─────────────────────────────────────────────────────────────────────────┘│
-└────────────────────────────────────────┬────────────────────────────────────┘
-                                         │
-                                         ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        NODE.JS RAG LAYER                                    │
-│                                                                             │
-│  ┌────────────────────┐     ┌────────────────────┐     ┌──────────────────┐ │
-│  │   Hybrid Search    │     │   2-Tier Cache     │     │    Feedback      │ │
-│  │   + Re-ranking     │     │   (Redis + PG)     │     │    Learning      │ │
-│  │                    │     │                    │     │                  │ │
-│  │  • Dense + Sparse  │     │  • L1: Redis       │     │  • Score adjust  │ │
-│  │  • Alpha blending  │     │  • L2: PostgreSQL  │     │  • Pattern learn │ │
-│  │  • LLM re-rank     │     │  • TTL + protect   │     │  • Comment score │ │
-│  └────────────────────┘     └────────────────────┘     └──────────────────┘ │
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────────┐│
-│  │                    Streaming Response Handler                            │ 
-│  │  • Cache hit → instant JSON response                                     │
-│  │  • Cache miss → SSE streaming                                            │
-│  └─────────────────────────────────────────────────────────────────────────┘│
-└────────────────────────────────────────┬────────────────────────────────────┘
-                                         │
-                                         ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           CLIENT LAYER                                      │
-│  ┌─────────────────────────────────────────────────────────────────────────┐│
-│  │                    Streaming Chat Client                                 │
-│  │  • Automatic cache/stream detection                                      │
-│  │  • Progressive UI updates                                                │
-│  │  • Session persistence                                                   │
-│  │  • Source attribution                                                    │
-│  └─────────────────────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A[Web crawling examples] --> D[Text and Markdown]
+    B[Local document processor] --> D
+    C[Cloud-storage processor example] --> D
+    M[Document mapping example] -.-> D
+    D --> I[Chunking and metadata example]
+    I --> E[External embedding API]
+    I --> K[Hashed keyword vectors]
+    E --> V[External vector index]
+    K --> V
+    Q[Question] --> R[Retrieval example]
+    V --> R
+    F[Feedback scoring example] -.-> R
+    R --> O[Optional model reranking]
+    O -.-> G[Answer generation and citation checks - missing]
 ```
 
-## Component Details
+Arrows indicate intended data flow. External services have not been configured or tested as part of a reproducible checkout. Dashed arrows mark missing or unverified integration.
 
-### Python Processing Layer
+### Preparation
 
-#### Web Crawlers (`python/crawlers/`)
+Python examples cover web requests, sitemap traversal, extraction from modern Office files and PDFs, and fuzzy document matching. Node.js ingestion accepts Markdown, text, and PDFs, splits text with overlap, requests embeddings, and prepares vector records with source metadata.
 
-Three specialized crawler types handle different source patterns:
+These examples need consistent invocation, bounded document handling, and reliable failure reporting. A content hash is recorded, but it does not establish duplicate detection. File identity and replacement behavior also need correction before repeated ingestion is reliable.
 
-| Crawler | Use Case | Key Features |
-|---------|----------|--------------|
-| `BaseCrawler` | Foundation class | Session pooling, rate limiting, URL filtering |
-| `DeepCrawler` | Sitemap-based | Sitemap index support, priority queuing, PDF extraction |
-| `AuthenticatedCrawler` | Login-protected | Token management, redirect blocking, lockout prevention |
+Cloud processing and authenticated crawling are architectural examples only. The synthetic demonstration should not require account access or real institutional content.
 
-#### Document Processor (`python/processors/`)
+### Retrieval
 
-Multi-format extraction with table preservation:
+The retrieval example creates a dense query vector and a sparse representation based on hashed terms, applies inferred metadata filters, and can request model reranking. Hashed term frequencies are not evidence of a full BM25 implementation.
 
-- **PDF**: PyPDF2 with page-by-page extraction
-- **DOCX**: python-docx with paragraph and table handling
-- **PPTX**: Slide-by-slide with notes extraction
-- **XLSX**: Sheet-by-sheet with markdown table conversion
+The provider SDK version, index compatibility, namespace handling, and weighting behavior are unverified. Some default metadata filters disagree with the ingestion categories. A threshold can flag weak retrieval, but there is no answer server that turns that flag into a verified refusal.
 
-#### Cloud Storage (`python/processors/cloud_storage_processor.py`)
+## Conversation and response design
 
-Dropbox API integration with:
-- Paginated folder listing
-- Recursive directory traversal
-- Shared link creation for URLs
-- Batch processing support
+The following is a **proposed flow**, not an implemented server:
 
-#### Document Mapper (`python/mapping/`)
-
-Cross-referencing system using fuzzy matching:
-- Multi-index lookups (filename, title, URL)
-- SequenceMatcher for similarity scoring
-- Configurable confidence thresholds
-
-### Node.js RAG Layer
-
-#### Hybrid Search (`src/retrieval/`)
-
-Combines semantic and keyword matching:
-
-```javascript
-// Alpha controls dense vs sparse balance
-// 0.0 = pure sparse (keyword)
-// 1.0 = pure dense (semantic)
-const alpha = 0.7; // Default: favor semantic
-
-const score = alpha * denseScore + (1 - alpha) * sparseScore;
+```mermaid
+flowchart TD
+    U[User turn] --> C[Resolve references using bounded conversation context]
+    C --> A{Meaning clear?}
+    A -->|No| Q[Ask a clarifying question]
+    A -->|Yes| R[Retrieve current evidence]
+    R --> S{Enough support?}
+    S -->|No| N[Explain what is missing]
+    S -->|Yes| G[Generate an answer from evidence]
+    G --> V[Validate source identifiers and citations]
+    V --> T[Stream answer and sources to client]
 ```
 
-**LLM Re-ranking**: When top results have similar scores (within threshold), uses GPT-4 to re-order based on actual relevance to the query.
+The client retains messages in memory and persists a session identifier in browser session storage. It sends the current message and session ID. There is no server-side history store, reference resolver, query rewrite, or tested topic-switching behavior in this checkout. Conversation export/import methods do not establish durable server memory.
 
-#### Two-Tier Cache (`src/cache/`)
+Follow-up support must distinguish a reference to a previous topic from a new topic, use fresh evidence when the question changes, and keep a prior answer from becoming its own authority. See the [case study](CASE_STUDY.md) for fictional examples and acceptance criteria.
 
-Response caching for sub-100ms repeated queries:
+## Cache boundaries
 
-```
-┌─────────────────────────────────────────┐
-│              Cache Flow                 │
-│                                         │
-│   Query → [L1 Redis] ──hit──→ Response  │
-│              │                          │
-│             miss                        │
-│              ▼                          │
-│         [L2 PostgreSQL] ─hit─→ Response │
-│              │                          │
-│             miss                        │
-│              ▼                          │
-│         [LLM Generation]                │
-│              │                          │
-│              ▼                          │
-│     Store in L1 + L2 → Response         │
-└─────────────────────────────────────────┘
-```
+The cache example looks in Redis before PostgreSQL, then can promote a database hit to Redis. Feedback and curated-entry rules are present, but their correctness and expiry behavior need tests. Cache tables do not have accompanying schema setup.
 
-**Protection Features**:
-- Positive feedback entries protected from eviction
-- Manually curated responses preserved
-- TTL-based expiration for standard entries
+PostgreSQL lookup uses normalized question text. An optional session suffix on Redis keys does not make the persistent cache conversation-aware. The cache cannot be presented as safe for contextual follow-ups or separate users' restricted evidence.
 
-#### Feedback Learning (`src/feedback/`)
+A future design must establish whether an answer is reusable for the resolved question, relevant conversation context, source revision, and permitted evidence. Until those conditions can be demonstrated, bypassing answer caching for contextual follow-ups is a reasonable proposed default. This is a design recommendation, not an implemented control.
 
-Continuous improvement through user feedback:
+## Feedback and streaming
 
-1. **Comment Scoring**: Hybrid regex + LLM analysis
-   - Quick patterns catch 70% of cases
-   - LLM handles ambiguous comments
-   - Reduces API costs by 60-80%
+Feedback examples classify comments and adjust source scores. They do not train a model, and there is no measured improvement in retrieval or answers. Storage types, initial scoring, and mixed positive/negative comments need correction.
 
-2. **Source Quality Tracking**:
-   - Helpful/not-helpful ratios per source
-   - Issue type categorization
-   - Automatic score adjustment
+The browser client distinguishes JSON from SSE, receives source information, and exposes update callbacks. It has no paired server or rendered interface. Phase 1 isolated checks found CRLF framing, cancellation-state, and overlapping-request problems. Accessible announcements, focus handling, and safe source rendering remain interface requirements.
 
-3. **Query Pattern Learning**:
-   - Successful query → source mappings
-   - Pattern matching boosts for known queries
+## Operational boundary
 
-### Ingestion Pipeline
+Current evidence consists of source inspection and limited offline checks. There is no integrated health endpoint, application shutdown path, structured tracing, or verified deployment setup. Some components have catches, retries, or timing fields; these are not a system-wide reliability guarantee.
 
-#### Document Flow
-
-```
-Document → Chunk → Embed → Enrich → Upsert
-    │         │       │       │        │
-    │         │       │       │        └─ Pinecone with namespace
-    │         │       │       └─ Source type, priority, hash
-    │         │       └─ Dense (3072d) + Sparse vectors
-    │         └─ 1200 chars with 200 overlap
-    └─ PDF/MD/TXT parsing
-```
-
-#### CLI Options
-
-```bash
-npm run ingest -- --dry              # Preview without changes
-npm run ingest -- --purge            # Clear namespace first
-npm run ingest -- --recreate-index   # Delete and recreate index
-npm run ingest -- --skip-pdf         # Process only text files
-```
-
-### Streaming Architecture
-
-#### Response Flow
-
-```
-Client Request
-      │
-      ▼
-  [Cache Check]
-      │
-   ┌──┴──┐
-   │     │
-  HIT   MISS
-   │     │
-   ▼     ▼
- JSON   SSE Stream
- (instant) │
-   │     ├─ response.start
-   │     ├─ message.delta (repeated)
-   │     ├─ sources
-   │     └─ response.end
-   │     │
-   └──┬──┘
-      │
-      ▼
- Client Display
-```
-
-## Data Models
-
-### Vector Record
-
-```javascript
-{
-  id: "sha1_hash_20chars",
-  values: [/* 3072 dense dimensions */],
-  sparseValues: {
-    indices: [/* term hashes */],
-    values: [/* frequencies */]
-  },
-  metadata: {
-    source: "document.pdf",
-    sourceFile: "document.pdf",
-    url: "https://...",
-    text: "chunk content...",
-    chunkIndex: 0,
-    totalChunks: 15,
-    sourceType: "policy_document",
-    category: "compliance",
-    priority: 8,
-    contentHash: "md5_16chars",
-    ingestionDate: "2024-01-15T..."
-  }
-}
-```
-
-### Feedback Record
-
-```javascript
-{
-  sourceKey: "document.pdf",
-  helpful: 45,
-  notHelpful: 3,
-  helpfulWithIssues: 5,
-  total: 53,
-  score: 0.73,  // (helpful - notHelpful*2) / total
-  issueTypes: {
-    "broken_link": 2,
-    "outdated": 3
-  }
-}
-```
-
-## Performance Characteristics
-
-| Operation | Target Latency | Achieved |
-|-----------|---------------|----------|
-| Cache hit (L1 Redis) | <50ms | ~15ms |
-| Cache hit (L2 PostgreSQL) | <100ms | ~45ms |
-| Hybrid search | <500ms | ~300ms |
-| Full generation (cache miss) | <3s | ~2s |
-| Streaming first token | <500ms | ~400ms |
-
-## Deployment Considerations
-
-### Environment Variables
-
-```bash
-# Vector Database
-PINECONE_API_KEY=
-PINECONE_INDEX_NAME=
-PINECONE_NAMESPACE=
-
-# Embeddings & LLM
-OPENAI_API_KEY=
-EMBED_MODEL=text-embedding-3-large
-
-# Cache Layer
-REDIS_URL=
-DB_HOST=
-DB_DATABASE=
-DB_USERNAME=
-DB_PASSWORD=
-
-# Optional: Cloud Storage
-DROPBOX_ACCESS_TOKEN=
-```
-
-### Scaling Notes
-
-- **Horizontal**: Stateless Node.js allows multiple instances
-- **Cache**: Redis cluster for high availability
-- **Vector DB**: Pinecone serverless scales automatically
-- **Ingestion**: Can parallelize across document batches
+Provider selection, supported runtimes, service setup, and an independent runnable slice are future work. [Limitations](LIMITATIONS.md), [security notes](SECURITY.md), and the [roadmap](../ROADMAP.md) describe what remains.
