@@ -1,6 +1,6 @@
 # What works here, and what still needs work
 
-This checkout now contains an independent Phase 3 terminal RAG demonstration alongside the original component examples and design material. The initial Phase 1 review checked the original tracked files and local commit history; syntax checks passed, but that audit did not run a connected-service demonstration. Ten focused live checks for the new demo passed on 2026-09-12; see [LOCAL_DEMO.md](LOCAL_DEMO.md#verification-record) for the verification record and earlier failures.
+This checkout now contains an independent terminal RAG demonstration alongside the original component examples and design material. The initial initial review checked the original tracked files and local commit history; syntax checks passed, but that audit did not run a connected-service demonstration. Ten focused live checks for the new demo passed on 2026-09-12; see [LOCAL_DEMO.md](LOCAL_DEMO.md#verification-record) for the verification record and earlier failures.
 
 The [README](../README.md) is the starting point for the showcase. This page records the practical limits behind its claims.
 

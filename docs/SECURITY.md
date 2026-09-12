@@ -1,6 +1,6 @@
 # Security notes
 
-These notes describe gaps found in the initial read-only review of this checkout. They are not a security assessment of a deployed service, and they do not establish that anyone's data has been exposed. The later security-review phase remains open.
+These notes describe gaps found in the initial read-only review of this checkout. They are not a security assessment of a deployed service, and they do not establish that anyone's data has been exposed. A comprehensive security review has not been completed.
 
 For disclosure guidance, see the [repository security policy](../SECURITY.md). For the public showcase's current scope, start with the [README](../README.md).
 
@@ -10,7 +10,7 @@ The examples include authentication handling for crawling, request delays, some 
 
 There is no complete chat server in the checkout against which to verify authentication, authorization, request isolation, or server-side secret handling.
 
-The independent [Phase 3 terminal demo](LOCAL_DEMO.md) uses fictional Markdown, keeps the API key in the local Node process, bounds provider requests, and checks cited source membership and exact quotation text. Offline checks cover failed-turn rollback and separate conversation histories. These scoped checks do not establish prompt-injection resistance, semantic support for arbitrary claims, or a multi-user access boundary. The original examples below remain unchanged.
+The independent [terminal demo](LOCAL_DEMO.md) uses fictional Markdown, keeps the API key in the local Node process, bounds provider requests, and checks cited source membership and exact quotation text. Offline checks cover failed-turn rollback and separate conversation histories. These scoped checks do not establish prompt-injection resistance, semantic support for arbitrary claims, or a multi-user access boundary. The original examples below remain unchanged.
 
 ## Findings from the initial review
 
