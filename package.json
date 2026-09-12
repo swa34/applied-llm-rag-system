@@ -1,0 +1,10 @@
+{
+  "name": "applied-llm-rag-demo",
+  "private": true,
+  "scripts": {
+    "demo": "node --env-file-if-exists=.env demo/cli.mjs",
+    "demo:cases": "node --env-file-if-exists=.env demo/scenarios.mjs",
+    "test": "node --test demo/*.test.mjs"
+  },
+  "engines": { "node": ">=22.9.0" }
+}

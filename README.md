@@ -6,7 +6,7 @@ Finding a document is only part of answering a question. A useful assistant also
 
 This independent reference project explores those problems through document processing, retrieval, caching, feedback, and streaming chat. It is informed by professional experience with institutional RAG systems. The showcase describes engineering choices in original prose; it is not a reproduction of an employer's production system.
 
-**Current state:** component examples and an audited design. There is no runnable end-to-end chat application yet. Provider integration, retrieval quality, and performance have not been verified. The [feature matrix](docs/FEATURE_STATUS.md) separates the code that exists from the work still needed.
+**Current state:** an independent Phase 3 terminal RAG demonstration now accompanies the original component examples and audited design. The demo uses fictional Markdown documents, a local index, and hosted OpenAI inference. Ten focused live checks passed on 2026-09-12. The [local demo guide](docs/LOCAL_DEMO.md) supplies commands and limits, and the [feature matrix](docs/FEATURE_STATUS.md) separates this new work from the unchanged original examples.
 
 ## What this demonstrates
 
@@ -18,6 +18,8 @@ This independent reference project explores those problems through document proc
 - Checking claims against implementation and documenting failures before presenting results.
 
 ## Capabilities at a glance
+
+This table preserves the original component scope from the Phase 1 audit. The new `demo/` implementation is described below and does not repair or integrate these examples.
 
 | Area | What is present | What remains |
 |---|---|---|
@@ -43,7 +45,7 @@ The second question does not name the trip or the approval rule. The assistant n
 
 Caching adds another constraint. The same follow-up wording after a different conversation can require a different answer. A cache keyed only by the latest question can return a plausible answer to the wrong question.
 
-This is a central design topic for the showcase. The existing client supplies a starting point for conversation handling, but the server-side behavior is **not implemented here**. The [design case study](docs/CASE_STUDY.md) explains the challenge and the checks a future independent demonstration should pass.
+This is a central design topic for the showcase. The independent terminal demo implements bounded conversational context, fresh retrieval, clarification, and evidence checks. It has no answer cache and does not add a server to the original browser client. The [design case study](docs/CASE_STUDY.md) explains the challenge and the focused scenarios being verified.
 
 ## Architecture
 
@@ -60,21 +62,23 @@ flowchart LR
     G -.-> H[Streaming client example]
 ```
 
-Read the [architecture notes](docs/ARCHITECTURE.md) for integration gaps and the proposed conversation boundary.
+The separate Phase 3 demo loads fictional Markdown into an in-memory index, resolves each question against bounded history, retrieves fresh passages, and checks quoted sources before displaying claims in the terminal. Read the [architecture notes](docs/ARCHITECTURE.md) for that implemented flow and the original integration gaps.
 
 ## Reviewing this checkout
 
 Start with the [feature matrix](docs/FEATURE_STATUS.md), [limitations](docs/LIMITATIONS.md), and [security notes](docs/SECURITY.md). The source directories contain the examples reviewed by the audit; this documentation does not reproduce their code or prompts.
 
-There is currently **no supported local demo command**. The repository has no Node.js package manifest, lockfile, chat server, or automated test suite. Python dependencies are listed in `python/requirements.txt`, but they are not locked and module entry points need repair. Runtime support has not been established through CI.
+For the independent demo, use Node.js 22.9 or newer with an existing `OPENAI_API_KEY` in the ignored root `.env` file. No npm dependency installation is required. Run `npm run demo` for interactive chat, `npm run demo -- "Who approves an overnight trip?"` for one question, `npm run demo:cases` for live scenarios, and `npm test` for offline checks. Hosted inference incurs API usage charges. See the [local demo guide](docs/LOCAL_DEMO.md) for configuration and output details.
+
+The root package manifest and tests cover `demo/` only. The original components still lack a resolved dependency setup and chat server. Python dependencies in `python/requirements.txt` are not locked, module entry points need repair, and CI has not established runtime support.
 
 The previous npm setup and ingestion instructions were not reproducible and have been removed. The existing ingestion `--dry` flag is also not a safe preview: it can still call paid APIs and perform requested remote index operations. Cloud processing can create public shared links. Do not connect these examples to real documents or production services.
 
-[.env.example](.env.example) is a placeholder configuration reference, not working setup instructions. A later approved phase will define a synthetic local demonstration, choose a provider, and supply tested commands.
+[.env.example](.env.example) includes configuration references. Follow the demo-specific instructions in [LOCAL_DEMO.md](docs/LOCAL_DEMO.md); the other service settings do not establish a working legacy application setup.
 
 ## Evaluation and results
 
-Retrieval quality, citation correctness, groundedness, follow-up behavior, latency, and API cost are **not yet measured**. No accuracy, speed, or savings claims are made for this checkout.
+The demo records resolved queries, retrieved sources, timing, and API usage for inspection. Ten focused live checks passed on 2026-09-12; the [verification record](docs/LOCAL_DEMO.md#verification-record) includes earlier failed prompt revisions and the limits of these checks. There is no formal benchmark of retrieval quality, groundedness, follow-up reliability, latency, or API cost, and no accuracy, speed, or savings claim.
 
 The [evaluation plan](docs/EVALUATION.md) describes how to record both successful and failed cases, distinguish retrieval from answer quality, and make future results reproducible.
 
@@ -97,4 +101,4 @@ The [roadmap](ROADMAP.md) records the scope, status, and completion criteria for
 7. Review the implemented security controls and residual risks.
 8. Add a verified demonstration screenshot and finish the portfolio presentation.
 
-Phases 3–8 are planned.
+The Phase 3 demonstration has passed its focused checks; see the roadmap for the milestone record. Phases 4–8 remain planned; the four demonstration documents and focused checks do not complete the broader dataset or evaluation phases.

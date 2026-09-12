@@ -1,8 +1,27 @@
 # Architecture
 
-This repository contains component examples for an institutional document assistant. It does not yet connect them into a running application. This document explains the intended relationships and where integration work remains.
+This repository contains an independent Phase 3 terminal demonstration alongside the original component examples for an institutional document assistant. The demo does not import or integrate the legacy `src/` and `python/` modules. Their Phase 1 audit findings remain unchanged.
 
-## Document preparation and retrieval
+## Implemented terminal demonstration
+
+```mermaid
+flowchart TD
+    M[Fictional Markdown] --> I[OpenAI embeddings and local in-memory index]
+    Q[Question and last six completed exchanges] --> C[OpenAI context resolution]
+    C --> D{Meaning clear?}
+    D -->|No| T[Terminal clarification]
+    D -->|Yes| R[Fresh cosine and keyword retrieval]
+    I --> R
+    R --> A[OpenAI structured claims or insufficient evidence]
+    A --> V[Retrieved source and exact quote checks]
+    V --> O[Terminal answer, citations, and diagnostics]
+```
+
+`demo/retrieval.mjs` loads heading-based passages, embeds them at startup, and combines cosine and keyword ranks with reciprocal rank fusion to select six passages. `demo/provider.mjs` calls OpenAI for embeddings and structured context/answer responses. `demo/chat.mjs` retains at most six completed exchanges, retrieves again for each resolved question, and validates source membership and exact quote text. Those checks do not prove semantic support for a claim.
+
+`demo/cli.mjs` provides interactive and one-question commands; the scenario runner exercises the fictional conversations. Ten focused live checks passed on 2026-09-12; see [LOCAL_DEMO.md](LOCAL_DEMO.md#verification-record). There is no answer cache, persistent index, streaming server, or browser interface in this slice. See [LOCAL_DEMO.md](LOCAL_DEMO.md) for commands, diagnostics, and provider tradeoffs.
+
+## Original document preparation and retrieval
 
 ```mermaid
 flowchart TD
@@ -22,7 +41,7 @@ flowchart TD
     O -.-> G[Answer generation and citation checks - missing]
 ```
 
-Arrows indicate intended data flow. External services have not been configured or tested as part of a reproducible checkout. Dashed arrows mark missing or unverified integration.
+Arrows indicate intended data flow. External services for these original components have not been configured or tested as part of a reproducible checkout. Dashed arrows mark missing or unverified integration.
 
 ### Preparation
 
@@ -30,7 +49,7 @@ Python examples cover web requests, sitemap traversal, extraction from modern Of
 
 These examples need consistent invocation, bounded document handling, and reliable failure reporting. A content hash is recorded, but it does not establish duplicate detection. File identity and replacement behavior also need correction before repeated ingestion is reliable.
 
-Cloud processing and authenticated crawling are architectural examples only. The synthetic demonstration should not require account access or real institutional content.
+Cloud processing and authenticated crawling are architectural examples only. The independent synthetic demonstration does not use those processing accounts or real institutional content; it requires an OpenAI API credential for hosted inference.
 
 ### Retrieval
 
@@ -38,7 +57,7 @@ The retrieval example creates a dense query vector and a sparse representation b
 
 The provider SDK version, index compatibility, namespace handling, and weighting behavior are unverified. Some default metadata filters disagree with the ingestion categories. A threshold can flag weak retrieval, but there is no answer server that turns that flag into a verified refusal.
 
-## Conversation and response design
+## Original browser conversation and response design
 
 The following is a **proposed flow**, not an implemented server:
 
@@ -55,17 +74,17 @@ flowchart TD
     V --> T[Stream answer and sources to client]
 ```
 
-The client retains messages in memory and persists a session identifier in browser session storage. It sends the current message and session ID. There is no server-side history store, reference resolver, query rewrite, or tested topic-switching behavior in this checkout. Conversation export/import methods do not establish durable server memory.
+The client retains messages in memory and persists a session identifier in browser session storage. It sends the current message and session ID. That browser client has no paired server-side history store, reference resolver, or query rewrite. The separate terminal demo implements those conversational decisions in its local process; it does not supply this client integration. Conversation export/import methods do not establish durable server memory.
 
 Follow-up support must distinguish a reference to a previous topic from a new topic, use fresh evidence when the question changes, and keep a prior answer from becoming its own authority. See the [case study](CASE_STUDY.md) for fictional examples and acceptance criteria.
 
-## Cache boundaries
+## Original cache boundaries
 
 The cache example looks in Redis before PostgreSQL, then can promote a database hit to Redis. Feedback and curated-entry rules are present, but their correctness and expiry behavior need tests. Cache tables do not have accompanying schema setup.
 
 PostgreSQL lookup uses normalized question text. An optional session suffix on Redis keys does not make the persistent cache conversation-aware. The cache cannot be presented as safe for contextual follow-ups or separate users' restricted evidence.
 
-A future design must establish whether an answer is reusable for the resolved question, relevant conversation context, source revision, and permitted evidence. Until those conditions can be demonstrated, bypassing answer caching for contextual follow-ups is a reasonable proposed default. This is a design recommendation, not an implemented control.
+A future design must establish whether an answer is reusable for the resolved question, relevant conversation context, source revision, and permitted evidence. Until those conditions can be demonstrated, bypassing answer caching for contextual follow-ups is a reasonable proposed default. This remains a design recommendation for the original components. The independent demo omits answer caching entirely.
 
 ## Feedback and streaming
 
@@ -75,6 +94,6 @@ The browser client distinguishes JSON from SSE, receives source information, and
 
 ## Operational boundary
 
-Current evidence consists of source inspection and limited offline checks. There is no integrated health endpoint, application shutdown path, structured tracing, or verified deployment setup. Some components have catches, retries, or timing fields; these are not a system-wide reliability guarantee.
+Evidence for the original components consists of the Phase 1 source inspection and limited offline checks. The independent demo adds offline tests and ten focused live checks that passed on 2026-09-12; see [LOCAL_DEMO.md](LOCAL_DEMO.md#verification-record). There is no integrated health endpoint, application shutdown path, structured tracing, or verified deployment setup. Some components have catches, retries, or timing fields; these are not a system-wide reliability guarantee.
 
-Provider selection, supported runtimes, service setup, and an independent runnable slice are future work. [Limitations](LIMITATIONS.md), [security notes](SECURITY.md), and the [roadmap](../ROADMAP.md) describe what remains.
+The independent slice selects OpenAI and a local index and documents Node.js 22.9 or newer. Broader runtime validation, service setup for the original components, and deployment remain future work. [Limitations](LIMITATIONS.md), [security notes](SECURITY.md), and the [roadmap](../ROADMAP.md) describe what remains.

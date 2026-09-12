@@ -6,7 +6,7 @@ This project is an independent reference implementation informed by professional
 
 Employer source code, proprietary documents, production credentials, internal prompts, private schemas, and confidential data must not be included in the showcase. Employer names and logos require explicit owner approval before use.
 
-The new showcase documentation is original prose. It explains observed capabilities and design choices without reproducing application code or prompts. Examples in the design discussion are fictional. A synthetic demonstration dataset has not yet been added; any future organization and sample documents must be clearly labeled as fictional or attributed to an explicitly public source.
+The showcase documentation is original prose. It explains observed capabilities and design choices without reproducing employer application code or prompts. Examples in the design discussion and the four Phase 3 [sample documents](sample-data/fictional/README.md) are fictional. The local demo is independently written. Any additional organization and sample documents must be clearly labeled as fictional or attributed to an explicitly public source.
 
 ## What the review establishes
 

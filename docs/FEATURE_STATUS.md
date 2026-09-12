@@ -1,10 +1,22 @@
 # Feature verification
 
-This matrix records the Phase 1 audit of the original 21 tracked files and nine locally available commits. Phase 2 changes documentation and supporting references only; application behavior is unchanged.
+The historical matrix below records the Phase 1 audit of the original 21 tracked files and nine locally available commits. Phase 2 changed documentation and supporting references only. Phase 3 adds independent `demo/` modules; the original `src/` and `python/` examples and their audit findings remain unchanged.
 
-“README claim” summarizes the earlier wording, not a renewed claim. “Runnable” means reproducible using instructions supplied with this checkout. A component may contain substantial logic while still lacking working setup or integration. No complete application test suite exists.
+“README claim” summarizes the earlier wording, not a renewed claim. “Runnable” means reproducible using instructions supplied with this checkout. A component may contain substantial logic while still lacking working setup or integration. The independent demo now has focused offline tests; these do not cover the original application components or establish a complete application test suite.
 
-## Evidence matrix
+## Independent Phase 3 demonstration
+
+| Scope | Implementation evidence | Verification boundary |
+|---|---|---|
+| Local execution | Root `package.json`, `demo/cli.mjs`, and the [local demo guide](LOCAL_DEMO.md) | Node.js 22.9 or newer; no npm dependencies; hosted API credentials required |
+| Fictional ingestion and retrieval | Four Markdown documents, heading-based passages, in-memory vectors, cosine/keyword rank fusion | Separate from legacy ingestion and managed-vector examples |
+| Grounded direct answer | Structured claims with retrieved source IDs and exact evidence quotations | Live supervisor-approval lookup passed; quotation checks do not prove claim support |
+| Follow-up context | Last six completed exchanges, standalone query resolution, fresh retrieval, clarification path | Implemented; ten focused live checks passed on 2026-09-12; see [verification record](LOCAL_DEMO.md#verification-record) |
+| Inspection and checks | Offline test suite, scenario runner, query/source/timing/usage output | Focused implementation checks; no formal benchmark or warm-cache test |
+
+The demo does not implement caching, feedback, streaming, a browser interface, or legacy service integration. The expanded evaluation and security review remain later phases.
+
+## Historical Phase 1 evidence matrix
 
 | Feature | README claim | Code evidence | Runnable | Tested | Status | Recommended action |
 |---|---|---|---|---|---|---|
@@ -28,7 +40,7 @@ This matrix records the Phase 1 audit of the original 21 tracked files and nine 
 | Injection defenses | No demonstrated controls | No dedicated controls or adversarial suite | No | No | Planned | Test user/document instructions, poisoning, and citation spoofing |
 | Observability and failure handling | Graceful fallback throughout | Component catches, timing fields, and console logs | Partial components only | No integrated checks | Partially implemented | Add bounded requests, redaction, health behavior, and meaningful diagnostics |
 
-## Verification performed
+## Historical Phase 1 verification performed
 
 - All nine JavaScript files passed syntax parsing in module mode under the audit environment's Node.js v25.8.1.
 - All nine Python files passed AST parsing under Python 3.12.3. Modules were not imported or run against services.
