@@ -2,9 +2,12 @@
   "name": "applied-llm-rag-demo",
   "private": true,
   "scripts": {
+    "check": "node demo/check.mjs",
+    "demo:check": "node --env-file-if-exists=.env demo/check.mjs --config",
     "demo": "node --env-file-if-exists=.env demo/cli.mjs",
     "demo:cases": "node --env-file-if-exists=.env demo/scenarios.mjs",
+    "pretest": "npm run check",
     "test": "node --test demo/*.test.mjs"
   },
-  "engines": { "node": ">=22.9.0" }
+  "engines": { "node": ">=24.21.0 <25" }
 }

@@ -136,6 +136,44 @@ test('failed turns roll back history and release the busy guard', async () => {
   assert.equal(conversation.history.length, 2);
 });
 
+for (const stage of ['resolution', 'retrieval', 'answer']) {
+  test(`${stage} failure preserves context and permits a successful retry`, async () => {
+    let fail = false;
+    const histories = [];
+    const calls = [];
+    const checkFailure = current => {
+      calls.push(current);
+      if (fail && stage === current) throw new Error('Temporary provider failure');
+    };
+    const conversation = new Conversation({
+      provider: {
+        resolve: async (question, history) => {
+          histories.push(history);
+          checkFailure('resolution');
+          return resolved(question);
+        },
+        answer: async () => { checkFailure('answer'); return generated(); },
+      },
+      retriever: { retrieve: async () => { checkFailure('retrieval'); return { matches: [source] }; } },
+    });
+    await conversation.send('Annual leave?');
+    const before = structuredClone(conversation.history);
+    calls.length = 0;
+    fail = true;
+    await assert.rejects(conversation.send('Failed follow-up'), /Temporary provider failure/);
+    assert.deepEqual(calls, ['resolution', 'retrieval', 'answer'].slice(0,
+      ['resolution', 'retrieval', 'answer'].indexOf(stage) + 1));
+    assert.deepEqual(conversation.history, before);
+    assert.equal(conversation.busy, false);
+    fail = false;
+    const result = await conversation.send('Retry follow-up');
+    assert.equal(result.status, 'answered');
+    assert.deepEqual(histories[2], before);
+    assert.deepEqual(conversation.history.map(turn => turn.question), ['Annual leave?', 'Retry follow-up']);
+    assert.equal(conversation.busy, false);
+  });
+}
+
 test('concurrent sends are rejected without adding a failed turn', async () => {
   let release;
   const gate = new Promise(resolve => { release = resolve; });

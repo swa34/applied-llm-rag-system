@@ -6,7 +6,7 @@ The [README](../README.md) is the starting point for the showcase. This page rec
 
 ## Independent demo limits
 
-The [local demo guide](LOCAL_DEMO.md) documents Node.js 22.9 or newer, an existing OpenAI credential, and commands for interactive chat, live scenarios, and offline tests. Its root package manifest has no external dependencies. The four synthetic documents and focused tests establish a small implementation scope, not a representative dataset or formal evaluation.
+The [local demo guide](LOCAL_DEMO.md) documents Node.js 24.21.0 from `.nvmrc`, an existing OpenAI credential, and commands for interactive chat, live scenarios, and offline tests. Its root package manifest has no external dependencies. The four synthetic documents and focused tests establish a small implementation scope, not a representative dataset or formal evaluation.
 
 The demo rebuilds an in-memory index on every start, calls hosted inference, and retains at most six completed exchanges per conversation. It has no answer cache, streaming interface, or legacy service integration. Citation checks establish retrieved source membership and exact quotation text; they do not prove that a quote supports its attached claim. Model decisions and retrieval coverage remain fallible.
 
@@ -14,7 +14,7 @@ The index caches normalized vectors and keyword sets, but lexical ranking remain
 
 Grouping citations by source preserves each claim's quote and reference, but does not validate its reasoning. The scenario checks require source-specific fixture facts and reject known contradictions or negations; unfamiliar wording and unsupported claims can still evade pattern checks. The historical ten-check result predates these review changes; see the separate [review verification record](LOCAL_DEMO.md#pr-review-verification).
 
-Only the default model configuration has been live-tested. Other models must support the demo's structured Responses request and output limits. Temperature is omitted outside the recognized standard GPT-4.1/GPT-4o aliases and dated snapshots, but this does not ensure compatibility. Resolver and answer output limits are 512 and 4,096 tokens respectively; either can be exhausted. Incomplete responses fail with sanitized explanations. HTTP 429 guidance distinguishes possible rate and quota issues without inspecting the error body, so it cannot diagnose which occurred. There are no automatic retries.
+The active default is `gpt-5.6-terra`, with `gpt-5.6-luna` selectable through `DEMO_MODEL`. Both models explicitly use reasoning effort `none` and omit temperature. See the demo guide for current verification evidence. Other model overrides require separate verification of the demo's structured Responses request and output limits. Resolver and answer output limits are 512 and 4,096 tokens respectively; either can be exhausted. Incomplete responses fail with sanitized explanations. HTTP 429 guidance distinguishes possible rate and quota issues without inspecting the error body, so it cannot diagnose which occurred. There are no automatic retries.
 
 ## Original component setup and integration
 
@@ -23,7 +23,7 @@ Only the default model configuration has been live-tested. Other models must sup
 - An ingestion command exists, but a complete answer-generation server and chat endpoint are absent.
 - Cache storage expects database tables without accompanying setup migrations.
 - Python import paths are inconsistent across package and direct-script execution.
-- The demo tests and tiny fictional corpus do not cover these original components. There is no CI workflow or formal evaluation result set.
+- The demo tests and tiny fictional corpus do not cover these original components. The CI workflow covers only the independent demo; its first hosted run is pending publication. There is no formal evaluation result set.
 
 The examples reference hosted model and vector services as well as Redis, PostgreSQL, and cloud storage. Listing those dependencies does not establish compatibility, availability, or a working local setup. The independent demo supplies its own documented execution path without connecting those services.
 
@@ -51,6 +51,6 @@ The independent terminal demo implements context resolution, clarification, and 
 
 ## Evidence still missing
 
-The demo records per-turn timing and API usage, but there is no formal measurement of latency distributions, cost savings, retrieval quality, or improvement from feedback. No rendered chat interface is available for keyboard, focus, screen-reader, or cancellation accessibility checks. The demo declares Node.js 22.9 or newer; a broader runtime compatibility matrix has not been verified. Dependency vulnerabilities in the original components have not been checked against a resolved installation.
+The demo records per-turn timing and API usage, but there is no formal measurement of latency distributions, cost savings, retrieval quality, or improvement from feedback. No rendered chat interface is available for keyboard, focus, screen-reader, or cancellation accessibility checks. The demo has been checked locally on Linux with Node.js 24.21.0. The configuration check validates local syntax only, and a broader runtime/operating-system matrix has not been verified. Dependency vulnerabilities in the original components have not been checked against a resolved installation.
 
 The [evaluation plan](EVALUATION.md) defines how to gather that evidence. Future features and measurements should stay labeled as planned until their checks have run.

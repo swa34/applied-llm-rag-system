@@ -1,9 +1,9 @@
 // Known-fixture smoke criteria, not a general entailment checker or held-out evaluation.
-const travelFact = { section: 'Overnight trip approval', patterns: [/supervisor/i, /approv|sign.off/i] };
-const purchasingFact = { section: 'Purchasing approval', patterns: [/department head/i, /approv|sign.off/i] };
+const travelFact = { section: 'Overnight trip approval', patterns: [/supervisor/i, /approv|signs?[- ]off/i] };
+const purchasingFact = { section: 'Purchasing approval', patterns: [/department head/i, /approv|signs?[- ]off/i] };
 const approvalContradictions = [
   /\b(?:supervisor|department head)\b[^.!?;,\n]*\b(?:not|never|cannot)\b[^.!?;,\n]*\b(?:approv\w*|sign|required|needed)\b/i,
-  /\b(?:approval|sign.off)\b[^.!?;,\n]*\b(?:not|never|cannot)\b[^.!?;,\n]*\b(?:required|needed|necessary)\b/i,
+  /\b(?:approval|signs?[- ]off)\b[^.!?;,\n]*\b(?:not|never|cannot)\b[^.!?;,\n]*\b(?:required|needed|necessary)\b/i,
   /\b(?:without|no need for)\s+(?:prior\s+|any\s+)?(?:approval|supervisor|department head)/i,
   /\b(?:no|neither)\s+(?:supervisor|department head|approval)\b[^.!?;\n]*\b(?:required|needed|necessary)/i,
 ];
@@ -11,14 +11,14 @@ const tuitionContradictions = [
   /\bpart.time\b[^.!?;\n]*\b(?:are|is|become|remain)\s+(?:also\s+)?eligible\b/i,
   /\bpart.time\b[^.!?;\n]*\b(?:can|may)\s+(?:also\s+)?(?:receive|claim|qualify)\b/i,
   /\b(?:all|every)\s+(?:staff|employees)\b[^.!?;\n]*\beligible\b/i,
-  /\bfull.time\b(?![^.!?;,\n]*\b(?:before|until|unless|yet)\b)[^.!?;,\n]*\b(?:not|never)\s+(?:eligible|qualif\w*)\b/i,
+  /\bfull.time\b(?![^.!?;,\n]*\b(?:before|until|unless|yet)\b)[^.!?;,\n]*\b(?:not|never|cannot)\s+(?:eligible|qualif\w*|receive)\b/i,
 ];
 
 export const cases = [
   { id: 'travel-direct', conversation: 'travel', question: 'Who approves an overnight trip?',
     status: 'answered', facts: [travelFact], forbidden: approvalContradictions },
   { id: 'tuition-direct', conversation: 'tuition', question: 'Who can receive tuition assistance?',
-    status: 'answered', facts: [{ section: 'Tuition assistance eligibility', patterns: [/full.time/i, /six|\b6\b/i, /eligible/i] }],
+    status: 'answered', facts: [{ section: 'Tuition assistance eligibility', patterns: [/full.time/i, /six|\b6\b/i, /eligible|\bcan receive\b/i] }],
     forbidden: tuitionContradictions },
   { id: 'travel-follow-up', conversation: 'travel', question: 'Does that change for part-time staff?',
     status: 'answered', facts: [{ ...travelFact, section: 'Part-time travel eligibility', patterns: [/part.time/i, /supervisor/i, /same|unchanged|does not change|no change/i] }],

@@ -1,3 +1,5 @@
+import { readConfig } from './config.mjs';
+
 const objectSchema = properties => ({
   type: 'object', properties, required: Object.keys(properties), additionalProperties: false,
 });
@@ -15,23 +17,24 @@ const answerSchema = objectSchema({
 
 export class OpenAIProvider {
   constructor({ apiKey = process.env.OPENAI_API_KEY,
-    model = process.env.DEMO_MODEL || 'gpt-4.1-mini',
-    embeddingModel = process.env.DEMO_EMBED_MODEL || 'text-embedding-3-small',
+    model = process.env.DEMO_MODEL,
+    embeddingModel = process.env.DEMO_EMBED_MODEL,
     fetchImpl = globalThis.fetch } = {}) {
-    if (!apiKey?.trim()) throw new Error('OPENAI_API_KEY is required. See docs/LOCAL_DEMO.md.');
-    this.apiKey = apiKey;
-    this.model = model;
-    this.embeddingModel = embeddingModel;
+    const config = readConfig({ OPENAI_API_KEY: apiKey, DEMO_MODEL: model, DEMO_EMBED_MODEL: embeddingModel });
+    this.apiKey = config.apiKey;
+    this.model = config.model;
+    this.embeddingModel = config.embeddingModel;
     this.fetch = fetchImpl;
   }
 
   async request(endpoint, body) {
+    const signal = AbortSignal.timeout(30_000);
     let response;
     try {
       response = await this.fetch(`https://api.openai.com/v1/${endpoint}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${this.apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body), signal: AbortSignal.timeout(30_000),
+        body: JSON.stringify(body), signal,
       });
     } catch {
       throw new Error('OpenAI request failed or timed out; check connectivity and retry.');
@@ -44,7 +47,10 @@ export class OpenAIProvider {
       throw new Error(`OpenAI ${endpoint} request failed (HTTP ${response.status}).`);
     }
     try { return await response.json(); }
-    catch { throw new Error('OpenAI returned invalid JSON.'); }
+    catch {
+      if (signal.aborted) throw new Error('OpenAI request failed or timed out; check connectivity and retry.');
+      throw new Error('OpenAI returned invalid JSON.');
+    }
   }
 
   async embed(texts) {
@@ -62,6 +68,7 @@ export class OpenAIProvider {
   async structured(name, schema, instructions, input, maxOutputTokens) {
     const result = await this.request('responses', {
       model: this.model, store: false,
+      ...(['gpt-5.6-terra', 'gpt-5.6-luna'].includes(this.model) ? { reasoning: { effort: 'none' } } : {}),
       ...(/^gpt-(?:4\.1(?:-mini|-nano)?|4o(?:-mini)?)(?:-\d{4}-\d{2}-\d{2})?$/.test(this.model) ? { temperature: 0 } : {}),
       max_output_tokens: maxOutputTokens,
       instructions, input: JSON.stringify(input),
@@ -95,7 +102,9 @@ criteria or narrow the scope of an already explicit question. Clarification is o
 an unresolved reference. Recover omitted subjects from recent turns only when there is
 one clear referent. If multiple topics are plausible, or no referent is
 available, return action clarify, an empty query, and a short question naming the choices.
-After a comparison or a multi-subject answer, a singular reference such as "that" or "it"
+Different groups or conditions within one policy are not separate topics. A follow-up
+naming a group continues that policy even if the previous answer already covered the group.
+After an answer covering distinct topics, a singular reference such as "that" or "it"
 is ambiguous unless the user identifies the subject. Do not expand that singular reference
 into a query about all the previous subjects. Ask which subject they mean. An explicit
 request about "both" or named subjects may retrieve without clarification.
