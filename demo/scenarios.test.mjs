@@ -94,3 +94,55 @@ test('a no-change travel follow-up is not mistaken for a negated approval requir
   const result = { ...resultFor(['Part-time staff follow the same approval process: their supervisor approves the trip. Employment status does not change who approves it.'], [source]), query: 'part-time travel' };
   assert.deepEqual(checkScenario(scenario, result), []);
 });
+
+test('non-answer text constraints reject fabricated conclusions without requiring sources', () => {
+  const scenario = cases.find(item => item.id === 'dev-visitor-weekend-gap');
+  const result = { status: 'insufficient_evidence', answer: 'Weekend visitor access is allowed.',
+    claims: [], citations: [], query: 'weekend visitor access', retrieved: [] };
+  assert.ok(checkScenario(scenario, result).includes('Answer contradicts a known fixture rule.'));
+});
+
+test('new policy fixtures reject direct reversals declared in the dataset', () => {
+  const examples = [
+    ['dev-hybrid-limit', 'src.hybrid-work.schedule',
+      'Eligible employees may work remotely up to two days per week under a written arrangement approved by their manager.',
+      'A manager is not required to approve a two-day hybrid schedule.'],
+    ['dev-commuter-paraphrase', 'src.commuter-benefit.eligibility-amount',
+      'Full-time and part-time employees may receive a pretax commuting contribution of up to $90 per month.',
+      'Part-time employees are not eligible for the $90 monthly contribution.'],
+    ['dev-caregiver-allowance', 'src.caregiver-leave.eligibility',
+      'Eligible employees may use up to three paid caregiver days per calendar year.',
+      'Eligible employees cannot use three paid caregiver days per year.'],
+  ];
+  for (const [id, sourceId, sourceText, wrongAnswer] of examples) {
+    const scenario = cases.find(item => item.id === id);
+    const source = { ...travel, id: sourceId, text: sourceText };
+    assert.ok(checkScenario(scenario, resultFor([wrongAnswer], [source]))
+      .includes('Answer contradicts a known fixture rule.'), id);
+  }
+});
+
+test('new policy contradiction guards accept bounded and approval-dependent paraphrases', () => {
+  const examples = [
+    ['dev-hybrid-limit', 'src.hybrid-work.schedule',
+      'Eligible employees may work remotely up to two days per week under a written arrangement approved by their manager.',
+      'Employees may work up to two days per week, but they cannot do so without manager approval.'],
+    ['dev-commuter-paraphrase', 'src.commuter-benefit.eligibility-amount',
+      'Full-time and part-time employees may receive a pretax commuting contribution of up to $90 per month.',
+      'Part-time employees are eligible, but the program never contributes more than $90 per month.'],
+    ['dev-commuter-paraphrase', 'src.commuter-benefit.eligibility-amount',
+      'Full-time and part-time employees may receive a pretax commuting contribution of up to $90 per month.',
+      'Part-time employees can receive no more than $90 per month.'],
+    ['dev-commuter-paraphrase', 'src.commuter-benefit.eligibility-amount',
+      'Full-time and part-time employees may receive a pretax commuting contribution of up to $90 per month.',
+      'Northbridge will not contribute more than $90 per month for part-time employees.'],
+    ['dev-caregiver-allowance', 'src.caregiver-leave.eligibility',
+      'Eligible employees may use up to three paid caregiver days per calendar year.',
+      'Eligible employees cannot use more than three paid caregiver days per calendar year.'],
+  ];
+  for (const [id, sourceId, sourceText, validAnswer] of examples) {
+    const scenario = cases.find(item => item.id === id);
+    const source = { ...travel, id: sourceId, text: sourceText };
+    assert.deepEqual(checkScenario(scenario, resultFor([validAnswer], [source])), [], id);
+  }
+});

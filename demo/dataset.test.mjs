@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { loadDevelopmentChecks } from './scenario-checks.mjs';
-import { loadCaseSuite, loadDataset, loadEvaluationData, validateSplitIsolation } from './dataset.mjs';
+import { datasetDirectory, loadCaseSuite, loadDataset, loadEvaluationData, validateSplitIsolation } from './dataset.mjs';
 
 test('versioned corpus and case splits pass structural validation', async () => {
   const { dataset, development, heldout } = await loadEvaluationData();
@@ -16,6 +17,8 @@ test('versioned corpus and case splits pass structural validation', async () => 
   assert.equal(heldout.cases.length, 8);
   assert.ok(dataset.chunks.every(chunk => /^src\.[a-z0-9.-]+$/.test(chunk.id)));
   assert.ok(dataset.chunks.every(chunk => chunk.file.startsWith('documents/')));
+  const manifest = await readFile(join(datasetDirectory, 'corpus.json'));
+  assert.equal(dataset.manifestSha256, createHash('sha256').update(manifest).digest('hex'));
 });
 
 test('the ten tuned smoke scenarios remain development fixtures only', async () => {
@@ -103,18 +106,66 @@ test('suite validation rejects unsupported statuses, source labels, and patterns
     }] }],
   };
   const path = join(directory, 'development.json');
+  const requiredSource = dataset.chunks[0].id;
+  const requiredDocument = dataset.passageToDocument.get(requiredSource);
+  const otherSource = dataset.chunks.find(chunk => dataset.passageToDocument.get(chunk.id) !== requiredDocument).id;
+  const otherDocument = dataset.passageToDocument.get(otherSource);
   for (const mutate of [
     suite => { suite.cases[0].turns[0].expected.status = 'maybe'; },
     suite => { suite.cases[0].turns[0].expected.facts[0].sourceId = 'src.missing'; },
     suite => { suite.cases[0].turns[0].expected.facts[0].patterns = ['[']; },
+    suite => { suite.cases[0].tags.push('unknown_tag'); },
+    suite => { suite.cases[0].turns[0].expected.onlySourceIds = []; },
+    suite => { suite.cases[0].turns[0].expected.onlyDocumentIds = []; },
+    suite => { suite.cases[0].turns[0].expected.onlySourceIds = [otherSource]; },
+    suite => { suite.cases[0].turns[0].expected.onlyDocumentIds = [otherDocument]; },
     suite => { suite.cases[0].turns[0].expected = { status: 'clarify', facts: [{
       sourceId: dataset.chunks[0].id, patterns: ['fictional'],
     }] }; },
+    suite => { suite.cases[0].turns[0].expected = { status: 'clarify', onlySourceIds: [requiredSource] }; },
   ]) {
     const candidate = structuredClone(valid); mutate(candidate);
     await writeFile(path, `${JSON.stringify(candidate)}\n`);
     await assert.rejects(loadCaseSuite(path, dataset), /Invalid fictional dataset/);
   }
+});
+
+test('suite validation accepts satisfiable allowlists and non-answer text constraints', async t => {
+  const directory = await mkdtemp(join(tmpdir(), 'rag-valid-suite-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const dataset = await loadDataset();
+  const sourceId = dataset.chunks[0].id;
+  const documentId = dataset.passageToDocument.get(sourceId);
+  const suite = {
+    schemaVersion: 1, suiteId: 'test-development', suiteVersion: '1.0.0', split: 'development',
+    corpus: { id: dataset.manifest.corpusId, version: dataset.manifest.corpusVersion },
+    cases: [{ id: 'test.case', tags: ['exact_lookup', 'paraphrase', 'multi_turn_context', 'topic_switch',
+      'ambiguity', 'conflict', 'missing_evidence', 'untrusted_instruction'], turns: [{
+      id: 'test-turn', question: 'What is the rule?', expected: { status: 'answered',
+        onlySourceIds: [sourceId], onlyDocumentIds: [documentId],
+        facts: [{ sourceId, patterns: ['fictional'] }] },
+    }] }],
+  };
+  const path = join(directory, 'development.json');
+  await writeFile(path, `${JSON.stringify(suite)}\n`);
+  await assert.doesNotReject(loadCaseSuite(path, dataset));
+
+  suite.cases[0].turns[0].expected = {
+    status: 'insufficient_evidence', onlySourceIds: [], onlyDocumentIds: [],
+    forbiddenPatterns: ['weekend access is allowed'],
+  };
+  await writeFile(path, `${JSON.stringify(suite)}\n`);
+  await assert.doesNotReject(loadCaseSuite(path, dataset));
+
+  const misleadingPath = join(directory, 'copy-development.json');
+  await writeFile(misleadingPath, `${JSON.stringify(suite)}\n`);
+  await assert.rejects(loadCaseSuite(misleadingPath, dataset), /suite split does not match/);
+});
+
+test('development checks expose manual-review reasons from the suite', async () => {
+  const { cases } = await loadDevelopmentChecks();
+  const conflict = cases.find(item => item.id === 'dev-studio-conflict');
+  assert.match(conflict.manualReviewReason, /surface both values/);
 });
 
 test('evaluation rubrics live outside the retrievable corpus tree', async () => {

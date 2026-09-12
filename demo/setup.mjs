@@ -9,8 +9,8 @@ export const corpusDirectory = datasetDirectory;
 export async function createDemo() {
   validateRuntime();
   const provider = new OpenAIProvider();
-  const { manifest, chunks } = await loadDataset(corpusDirectory);
+  const { manifest, manifestSha256, chunks } = await loadDataset(corpusDirectory);
   const retriever = await LocalRetriever.create(chunks, provider);
-  return { provider, retriever, dataset: manifest,
+  return { provider, retriever, dataset: { ...manifest, manifestSha256 },
     newConversation: () => new Conversation({ provider, retriever }) };
 }

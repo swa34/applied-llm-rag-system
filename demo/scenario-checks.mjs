@@ -1,24 +1,6 @@
 // Development-fixture checks, not a general entailment checker or held-out evaluation.
 import { developmentSuitePath, loadCaseSuite, loadDataset } from './dataset.mjs';
 
-const approvalContradictions = [
-  /\b(?:supervisor|department head)\b[^.!?;,\n]*\b(?:not|never|cannot)\b[^.!?;,\n]*\b(?:approv\w*|sign|required|needed)\b/i,
-  /\b(?:approval|signs?[- ]off)\b[^.!?;,\n]*\b(?:not|never|cannot)\b[^.!?;,\n]*\b(?:required|needed|necessary)\b/i,
-  /\b(?:without|no need for)\s+(?:prior\s+|any\s+)?(?:approval|supervisor|department head)/i,
-  /\b(?:no|neither)\s+(?:supervisor|department head|approval)\b[^.!?;\n]*\b(?:required|needed|necessary)/i,
-];
-const tuitionContradictions = [
-  /\bpart.time\b[^.!?;\n]*\b(?:are|is|become|remain)\s+(?:also\s+)?eligible\b/i,
-  /\bpart.time\b[^.!?;\n]*\b(?:can|may)\s+(?:also\s+)?(?:receive|claim|qualify)\b/i,
-  /\b(?:all|every)\s+(?:staff|employees)\b[^.!?;\n]*\beligible\b/i,
-  /\bfull.time\b(?![^.!?;,\n]*\b(?:before|until|unless|yet)\b)[^.!?;,\n]*\b(?:not|never|cannot)\s+(?:eligible|qualif\w*|receive)\b/i,
-];
-const legacyForbidden = new Map([
-  ['travel-direct', approvalContradictions], ['travel-follow-up', approvalContradictions],
-  ['comparison', approvalContradictions], ['clarification-reply', approvalContradictions],
-  ['tuition-direct', tuitionContradictions], ['tuition-follow-up', tuitionContradictions],
-]);
-
 const regex = pattern => new RegExp(pattern, 'iu');
 
 export async function loadDevelopmentChecks() {
@@ -38,11 +20,12 @@ export async function loadDevelopmentChecks() {
         section: chunks.get(fact.sourceId).section,
         patterns: fact.patterns.map(regex),
       })),
-      forbidden: [...(legacyForbidden.get(turn.id) ?? []), ...(expected.forbiddenPatterns ?? []).map(regex)],
+      forbidden: (expected.forbiddenPatterns ?? []).map(regex),
       answer: expected.answerPattern ? regex(expected.answerPattern) : undefined,
       query: expected.queryPattern ? regex(expected.queryPattern) : undefined,
       onlyFiles: expected.onlyDocumentIds?.map(documentId => documentFiles.get(documentId)),
       onlySourceIds: expected.onlySourceIds,
+      manualReviewReason: expected.manualReviewReason,
     };
   }));
   return { cases, suite };

@@ -24,10 +24,13 @@ async function main() {
       const failures = checkScenario(test, result);
       results.push({ id: test.id, conversation: test.conversation, expectedStatus: test.status,
         expectedSections: (test.facts ?? []).map(fact => fact.section),
+        manualReviewRequired: Boolean(test.manualReviewReason), manualReviewReason: test.manualReviewReason,
         priorTurns, passed: failures.length === 0, failures, ...result });
     } catch (error) {
       results.push({ id: test.id, conversation: test.conversation, question: test.question,
-        expectedStatus: test.status, priorTurns, passed: false, failures: [error.message] });
+        expectedStatus: test.status, manualReviewRequired: Boolean(test.manualReviewReason),
+        manualReviewReason: test.manualReviewReason,
+        priorTurns, passed: false, failures: [error.message] });
     }
     console.error(`${results.at(-1).passed ? 'PASS' : 'FAIL'} ${test.id}`);
   }
@@ -41,7 +44,8 @@ async function main() {
     kind: 'Development live checks; pattern checks do not establish semantic correctness',
     timestamp: new Date().toISOString(), baseRevision, sourceState: 'working checkout; may include uncommitted changes',
     runtime: process.version, model: demo.provider.model, embeddingModel: demo.provider.embeddingModel,
-    dataset: { id: demo.dataset.corpusId, version: demo.dataset.corpusVersion },
+    dataset: { id: demo.dataset.corpusId, version: demo.dataset.corpusVersion,
+      manifestSha256: demo.dataset.manifestSha256 },
     suite: { id: developmentSuite.suiteId, version: developmentSuite.suiteVersion,
       split: developmentSuite.split, sha256: suiteSha256 },
     retrieval: { type: 'local cosine and keyword reciprocal rank fusion',

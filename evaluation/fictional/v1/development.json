@@ -7,13 +7,19 @@
   "cases": [
     {
       "id": "dev.travel-context",
-      "tags": ["direct_lookup", "multi_turn_context", "topic_switch"],
+      "tags": ["exact_lookup", "multi_turn_context", "topic_switch"],
       "turns": [
         {
           "id": "travel-direct",
           "question": "Who approves an overnight trip?",
           "expected": {
             "status": "answered",
+            "forbiddenPatterns": [
+              "\\b(?:supervisor|department head)\\b[^.!?;,\\n]*\\b(?:not|never|cannot)\\b[^.!?;,\\n]*\\b(?:approv\\w*|sign|required|needed)\\b",
+              "\\b(?:approval|signs?[- ]off)\\b[^.!?;,\\n]*\\b(?:not|never|cannot)\\b[^.!?;,\\n]*\\b(?:required|needed|necessary)\\b",
+              "\\b(?:without|no need for)\\s+(?:prior\\s+|any\\s+)?(?:approval|supervisor|department head)",
+              "\\b(?:no|neither)\\s+(?:supervisor|department head|approval)\\b[^.!?;\\n]*\\b(?:required|needed|necessary)"
+            ],
             "facts": [{ "sourceId": "src.travel.overnight-approval", "patterns": ["supervisor", "approv|signs?[- ]off"] }]
           }
         },
@@ -23,6 +29,12 @@
           "expected": {
             "status": "answered",
             "queryPattern": "travel|trip",
+            "forbiddenPatterns": [
+              "\\b(?:supervisor|department head)\\b[^.!?;,\\n]*\\b(?:not|never|cannot)\\b[^.!?;,\\n]*\\b(?:approv\\w*|sign|required|needed)\\b",
+              "\\b(?:approval|signs?[- ]off)\\b[^.!?;,\\n]*\\b(?:not|never|cannot)\\b[^.!?;,\\n]*\\b(?:required|needed|necessary)\\b",
+              "\\b(?:without|no need for)\\s+(?:prior\\s+|any\\s+)?(?:approval|supervisor|department head)",
+              "\\b(?:no|neither)\\s+(?:supervisor|department head|approval)\\b[^.!?;\\n]*\\b(?:required|needed|necessary)"
+            ],
             "facts": [{ "sourceId": "src.travel.part-time", "patterns": ["part.time", "supervisor", "same|unchanged|does not change|no change"] }]
           }
         },
@@ -40,13 +52,19 @@
     },
     {
       "id": "dev.tuition-context",
-      "tags": ["direct_lookup", "multi_turn_context"],
+      "tags": ["exact_lookup", "multi_turn_context"],
       "turns": [
         {
           "id": "tuition-direct",
           "question": "Who can receive tuition assistance?",
           "expected": {
             "status": "answered",
+            "forbiddenPatterns": [
+              "\\bpart.time\\b[^.!?;\\n]*\\b(?:are|is|become|remain)\\s+(?:also\\s+)?eligible\\b",
+              "\\bpart.time\\b[^.!?;\\n]*\\b(?:can|may)\\s+(?:also\\s+)?(?:receive|claim|qualify)\\b",
+              "\\b(?:all|every)\\s+(?:staff|employees)\\b[^.!?;\\n]*\\beligible\\b",
+              "\\bfull.time\\b(?![^.!?;,\\n]*\\b(?:before|until|unless|yet)\\b)[^.!?;,\\n]*\\b(?:not|never|cannot)\\s+(?:eligible|qualif\\w*|receive)\\b"
+            ],
             "facts": [{ "sourceId": "src.tuition.eligibility", "patterns": ["full.time", "six|\\b6\\b", "eligible|can receive"] }]
           }
         },
@@ -56,6 +74,12 @@
           "expected": {
             "status": "answered",
             "queryPattern": "tuition",
+            "forbiddenPatterns": [
+              "\\bpart.time\\b[^.!?;\\n]*\\b(?:are|is|become|remain)\\s+(?:also\\s+)?eligible\\b",
+              "\\bpart.time\\b[^.!?;\\n]*\\b(?:can|may)\\s+(?:also\\s+)?(?:receive|claim|qualify)\\b",
+              "\\b(?:all|every)\\s+(?:staff|employees)\\b[^.!?;\\n]*\\beligible\\b",
+              "\\bfull.time\\b(?![^.!?;,\\n]*\\b(?:before|until|unless|yet)\\b)[^.!?;,\\n]*\\b(?:not|never|cannot)\\s+(?:eligible|qualif\\w*|receive)\\b"
+            ],
             "facts": [{ "sourceId": "src.tuition.part-time", "patterns": ["part.time", "not eligible|ineligible|do not qualify|not qualify"] }]
           }
         }
@@ -70,6 +94,12 @@
           "question": "Compare travel and purchasing approvals.",
           "expected": {
             "status": "answered",
+            "forbiddenPatterns": [
+              "\\b(?:supervisor|department head)\\b[^.!?;,\\n]*\\b(?:not|never|cannot)\\b[^.!?;,\\n]*\\b(?:approv\\w*|sign|required|needed)\\b",
+              "\\b(?:approval|signs?[- ]off)\\b[^.!?;,\\n]*\\b(?:not|never|cannot)\\b[^.!?;,\\n]*\\b(?:required|needed|necessary)\\b",
+              "\\b(?:without|no need for)\\s+(?:prior\\s+|any\\s+)?(?:approval|supervisor|department head)",
+              "\\b(?:no|neither)\\s+(?:supervisor|department head|approval)\\b[^.!?;\\n]*\\b(?:required|needed|necessary)"
+            ],
             "facts": [
               { "sourceId": "src.travel.overnight-approval", "patterns": ["supervisor", "approv|signs?[- ]off"] },
               { "sourceId": "src.purchasing.approval", "patterns": ["department head", "approv|signs?[- ]off"] }
@@ -86,6 +116,12 @@
           "question": "Purchasing approvals.",
           "expected": {
             "status": "answered",
+            "forbiddenPatterns": [
+              "\\b(?:supervisor|department head)\\b[^.!?;,\\n]*\\b(?:not|never|cannot)\\b[^.!?;,\\n]*\\b(?:approv\\w*|sign|required|needed)\\b",
+              "\\b(?:approval|signs?[- ]off)\\b[^.!?;,\\n]*\\b(?:not|never|cannot)\\b[^.!?;,\\n]*\\b(?:required|needed|necessary)\\b",
+              "\\b(?:without|no need for)\\s+(?:prior\\s+|any\\s+)?(?:approval|supervisor|department head)",
+              "\\b(?:no|neither)\\s+(?:supervisor|department head|approval)\\b[^.!?;\\n]*\\b(?:required|needed|necessary)"
+            ],
             "facts": [{ "sourceId": "src.purchasing.approval", "patterns": ["department head", "approv|signs?[- ]off"] }]
           }
         }
@@ -117,6 +153,11 @@
         "question": "What is the weekly limit for an approved hybrid schedule, and who approves the agreement?",
         "expected": {
           "status": "answered",
+          "forbiddenPatterns": [
+            "\\bmanager approval\\b\\s+(?:is|was)\\s+(?:not|never)\\s+(?:required|needed|necessary)\\b",
+            "\\b(?:does|do) not (?:require|need) manager approval\\b",
+            "\\bmanager\\s+(?:is|was)\\s+(?:not|never)\\s+(?:required|needed)\\s+to approv\\w*\\b"
+          ],
           "facts": [{ "sourceId": "src.hybrid-work.schedule", "patterns": ["two|\\b2\\b", "days? per week|days? a week", "manager", "approv"] }]
         }
       }]
@@ -129,6 +170,10 @@
         "question": "Can someone working half time get commuting help, and what is the largest monthly contribution?",
         "expected": {
           "status": "answered",
+          "forbiddenPatterns": [
+            "\\bpart.time (?:employees?|staff)\\s+(?:are|remain)\\s+(?:not eligible|ineligible)(?!\\s+for\\s+(?:more than|over)\\b)",
+            "\\b(?:may|can|will)\\s+(?!not\\b|never\\b)[^.!?;,\\n]*\\b(?:receive|contribute)\\w*\\s+(?:more than|over)\\s+\\$?90\\b"
+          ],
           "facts": [{ "sourceId": "src.commuter-benefit.eligibility-amount", "patterns": ["part.time", "\\$90|90 dollars?", "month"] }]
         }
       }]
@@ -165,6 +210,10 @@
           "question": "How many paid caregiver days can an eligible employee use each year?",
           "expected": {
             "status": "answered",
+            "forbiddenPatterns": [
+              "\\b(?:cannot|can not|may not)\\s+use\\s+(?!more than\\b|over\\b)(?:up to\\s+)?(?:three|3)\\s+(?:paid\\s+)?caregiver days?\\b",
+              "\\b(?:may|can|will)\\s+use\\s+(?:more than|over)\\s+(?:three|3)\\s+(?:paid\\s+)?caregiver days?\\b"
+            ],
             "facts": [{ "sourceId": "src.caregiver-leave.eligibility", "patterns": ["three|\\b3\\b", "calendar year"] }]
           }
         },
@@ -228,7 +277,7 @@
       "turns": [{
         "id": "dev-visitor-weekend-gap",
         "question": "Can a registered visitor enter the institute on Saturday?",
-        "expected": { "status": "insufficient_evidence" }
+        "expected": { "status": "insufficient_evidence", "forbiddenPatterns": ["weekend visitor access is (?:allowed|permitted|prohibited|forbidden)"] }
       }]
     },
     {

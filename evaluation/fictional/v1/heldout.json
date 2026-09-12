@@ -122,7 +122,7 @@
       "turns": [{
         "id": "eval-commuter-parking-gap",
         "question": "Will the commuter benefit reimburse an employee's monthly parking permit?",
-        "expected": { "status": "insufficient_evidence" }
+        "expected": { "status": "insufficient_evidence", "forbiddenPatterns": ["parking (?:is|is not|isn't) (?:covered|reimbursed|eligible)"] }
       }]
     },
     {

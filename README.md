@@ -69,7 +69,7 @@ Chat requires an existing `OPENAI_API_KEY` and incurs API usage charges. The [se
 
 ## Verification
 
-All **65 offline tests** pass on the pinned runtime in both the working checkout and a clean copy without credentials or installed packages. They cover runtime and provider contracts, retrieval, citations, conversation recovery, the versioned corpus, case schemas, source labels, and split isolation. GitHub Actions runs the offline suite and CLI help check; hosted verification of this dataset revision remains pending publication.
+All **70 offline tests** pass on the pinned runtime without credentials or installed packages. They cover runtime and provider contracts, retrieval, citations, conversation recovery, the versioned corpus, case schemas, source labels, rubric consistency, and split isolation. GitHub Actions reruns the offline suite and CLI help check for pushed revisions.
 
 Ten focused live scenarios passed for each of Terra and Luna on 2026-09-12 after the documented resolver and checker corrections. Each final claim was independently inspected against its evidence quote. The [verification record](docs/LOCAL_DEMO.md#terra-and-luna-verification) preserves initial failures and distinguishes raw results from corrected-checker replays.
 

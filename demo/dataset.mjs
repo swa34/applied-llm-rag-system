@@ -1,5 +1,6 @@
 import { lstat, readFile, realpath } from 'node:fs/promises';
-import { isAbsolute, join, resolve, sep } from 'node:path';
+import { createHash } from 'node:crypto';
+import { basename, isAbsolute, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadDocuments } from './retrieval.mjs';
 
@@ -15,6 +16,7 @@ const requiredTags = new Set([
   'exact_lookup', 'paraphrase', 'multi_turn_context', 'topic_switch', 'ambiguity',
   'conflict', 'missing_evidence', 'untrusted_instruction',
 ]);
+const allowedTags = new Set([...requiredTags, 'comparison', 'clarification']);
 
 function fail(message) {
   throw new Error(`Invalid fictional dataset: ${message}`);
@@ -40,12 +42,17 @@ function unique(values, label) {
   if (new Set(values).size !== values.length) fail(`${label} must be unique.`);
 }
 
-async function readJson(path) {
+async function readJsonWithSource(path) {
   try {
-    return JSON.parse(await readFile(path, 'utf8'));
+    const source = await readFile(path);
+    return { value: JSON.parse(source), source };
   } catch (error) {
     fail(`cannot read ${path}: ${error instanceof SyntaxError ? 'invalid JSON' : error.message}`);
   }
+}
+
+async function readJson(path) {
+  return (await readJsonWithSource(path)).value;
 }
 
 async function assertSafeDocument(root, file) {
@@ -62,7 +69,9 @@ async function assertSafeDocument(root, file) {
 }
 
 export async function loadDataset(root = datasetDirectory) {
-  const manifest = object(await readJson(join(root, 'corpus.json')), 'corpus manifest');
+  const manifestPath = join(root, 'corpus.json');
+  const loadedManifest = await readJsonWithSource(manifestPath);
+  const manifest = object(loadedManifest.value, 'corpus manifest');
   if (manifest.schemaVersion !== 1) fail('unsupported corpus schemaVersion.');
   id(manifest.corpusId, 'corpusId');
   nonempty(manifest.corpusVersion, 'corpusVersion');
@@ -96,7 +105,8 @@ export async function loadDataset(root = datasetDirectory) {
   if (loadedIds.length !== passageIds.length || passageIds.some(sourceId => !loadedIds.includes(sourceId))) {
     fail('manifest passages must map one-to-one to nonempty document sections no longer than 1,800 characters.');
   }
-  return { manifest, chunks, passageToDocument };
+  const manifestSha256 = createHash('sha256').update(loadedManifest.source).digest('hex');
+  return { manifest, manifestSha256, chunks, passageToDocument };
 }
 
 function compilePattern(pattern, label) {
@@ -104,7 +114,7 @@ function compilePattern(pattern, label) {
   try { new RegExp(pattern, 'iu'); } catch { fail(`${label} is not a valid regular expression.`); }
 }
 
-function validateExpected(expected, sourceIds, documentIds, label) {
+function validateExpected(expected, sourceIds, documentIds, passageToDocument, label) {
   object(expected, `${label} expected`);
   if (!statuses.has(expected.status)) fail(`${label} has an unsupported status.`);
   const facts = expected.facts ?? [];
@@ -137,7 +147,15 @@ function validateExpected(expected, sourceIds, documentIds, label) {
   for (const sourceId of expected.onlySourceIds ?? []) {
     if (!sourceIds.has(sourceId)) fail(`${label} references unknown allowed source ${sourceId}.`);
   }
-  if (expected.status !== 'answered' && (expected.onlyDocumentIds || expected.onlySourceIds || expected.forbiddenPatterns)) {
+  for (const fact of facts) {
+    if (expected.onlySourceIds && !expected.onlySourceIds.includes(fact.sourceId)) {
+      fail(`${label} requires ${fact.sourceId}, which onlySourceIds excludes.`);
+    }
+    if (expected.onlyDocumentIds && !expected.onlyDocumentIds.includes(passageToDocument.get(fact.sourceId))) {
+      fail(`${label} requires ${fact.sourceId}, which onlyDocumentIds excludes.`);
+    }
+  }
+  if (expected.status !== 'answered' && (expected.onlyDocumentIds?.length || expected.onlySourceIds?.length)) {
     fail(`${label} non-answer turns cannot declare answer-source constraints.`);
   }
   if (expected.manualReviewReason !== undefined) nonempty(expected.manualReviewReason, `${label} manualReviewReason`);
@@ -149,7 +167,7 @@ export async function loadCaseSuite(path, dataset) {
   id(suite.suiteId, 'suiteId');
   nonempty(suite.suiteVersion, 'suiteVersion');
   if (!splits.has(suite.split)) fail('suite split must be development or heldout.');
-  if (!path.endsWith(`${suite.split}.json`)) fail(`suite split does not match ${path}.`);
+  if (basename(path) !== `${suite.split}.json`) fail(`suite split does not match ${path}.`);
   object(suite.corpus, 'suite corpus');
   if (suite.corpus.id !== dataset.manifest.corpusId || suite.corpus.version !== dataset.manifest.corpusVersion) {
     fail(`${suite.suiteId} targets a different corpus id or version.`);
@@ -164,13 +182,14 @@ export async function loadCaseSuite(path, dataset) {
     testCase.tags.forEach(tag => {
       nonempty(tag, `${testCase.id} tag`);
       if (!tagPattern.test(tag)) fail(`${testCase.id} tags must use lowercase letters, digits, and underscores.`);
+      if (!allowedTags.has(tag)) fail(`${testCase.id} uses unknown tag ${tag}.`);
     });
     if (!Array.isArray(testCase.turns) || !testCase.turns.length) fail(`${testCase.id} turns must be nonempty.`);
     for (const turn of testCase.turns) {
       object(turn, 'turn'); turnIds.push(id(turn.id, 'turn id'));
       const question = nonempty(turn.question, `${turn.id} question`).trim();
       if (question.length > 2000) fail(`${turn.id} question exceeds 2,000 characters.`);
-      validateExpected(turn.expected, sourceIds, documentIds, turn.id);
+      validateExpected(turn.expected, sourceIds, documentIds, dataset.passageToDocument, turn.id);
     }
   }
   unique(caseIds, `${suite.suiteId} case ids`);
@@ -180,7 +199,7 @@ export async function loadCaseSuite(path, dataset) {
   return suite;
 }
 
-const normalize = question => question.normalize('NFKC').toLowerCase().replaceAll('’', "'")
+const normalize = question => question.normalize('NFKC').toLowerCase()
   .replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
 
 export function validateSplitIsolation(development, heldout) {

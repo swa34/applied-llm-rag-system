@@ -9,7 +9,7 @@ The historical matrix below records the initial audit of the original 21 tracked
 | Scope | Implementation evidence | Verification boundary |
 |---|---|---|
 | Local execution | Root `package.json`, `demo/cli.mjs`, and the [local demo guide](LOCAL_DEMO.md) | Node.js 24.21.0 pinned; no npm dependencies; hosted API credentials required for chat |
-| Reproducible infrastructure | `.nvmrc`, runtime/configuration preflight, and credential-free GitHub Actions workflow | 65 offline tests pass locally on the pinned runtime; hosted runs and historical counts are recorded in the [verification record](LOCAL_DEMO.md#runtime-and-ci-verification) |
+| Reproducible infrastructure | `.nvmrc`, runtime/configuration preflight, and credential-free GitHub Actions workflow | 70 offline tests pass locally on the pinned runtime; hosted runs and historical counts are recorded in the [verification record](LOCAL_DEMO.md#runtime-and-ci-verification) |
 | Fictional ingestion and retrieval | Ten allowlisted Markdown documents, 38 stable-ID passages, in-memory vectors, cosine/keyword rank fusion | Versioned corpus is separate from legacy ingestion and managed-vector examples |
 | Grounded direct answer | Structured claims with retrieved source IDs and exact evidence quotations | Live supervisor-approval lookup passed; quotation checks do not prove claim support |
 | Follow-up context | Last six completed exchanges, standalone query resolution, fresh retrieval, clarification path | Implemented; ten focused live checks passed on 2026-09-12; see [verification record](LOCAL_DEMO.md#verification-record) |
