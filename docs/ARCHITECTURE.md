@@ -1,6 +1,6 @@
 # Architecture
 
-This repository contains an independent Phase 3 terminal demonstration alongside the original component examples for an institutional document assistant. The demo does not import or integrate the legacy `src/` and `python/` modules. Their Phase 1 audit findings remain unchanged.
+This repository contains an independent terminal demonstration alongside the original component examples for an institutional document assistant. The demo does not import or integrate the legacy `src/` and `python/` modules. Their initial audit findings remain unchanged.
 
 ## Implemented terminal demonstration
 
@@ -96,10 +96,10 @@ A future design must establish whether an answer is reusable for the resolved qu
 
 Feedback examples classify comments and adjust source scores. They do not train a model, and there is no measured improvement in retrieval or answers. Storage types, initial scoring, and mixed positive/negative comments need correction.
 
-The browser client distinguishes JSON from SSE, receives source information, and exposes update callbacks. It has no paired server or rendered interface. Phase 1 isolated checks found CRLF framing, cancellation-state, and overlapping-request problems. Accessible announcements, focus handling, and safe source rendering remain interface requirements.
+The browser client distinguishes JSON from SSE, receives source information, and exposes update callbacks. It has no paired server or rendered interface. Initial isolated checks found CRLF framing, cancellation-state, and overlapping-request problems. Accessible announcements, focus handling, and safe source rendering remain interface requirements.
 
 ## Operational boundary
 
-Evidence for the original components consists of the Phase 1 source inspection and limited offline checks. The independent demo adds offline tests and ten focused live checks that passed on 2026-09-12; see [LOCAL_DEMO.md](LOCAL_DEMO.md#verification-record). There is no integrated health endpoint, application shutdown path, structured tracing, or verified deployment setup. Some components have catches, retries, or timing fields; these are not a system-wide reliability guarantee.
+Evidence for the original components consists of the initial source inspection and limited offline checks. The independent demo adds offline tests and ten focused live checks that passed on 2026-09-12; see [LOCAL_DEMO.md](LOCAL_DEMO.md#verification-record). There is no integrated health endpoint, application shutdown path, structured tracing, or verified deployment setup. Some components have catches, retries, or timing fields; these are not a system-wide reliability guarantee.
 
-The independent slice selects OpenAI and a local index, pins Node.js 24.21.0, and validates runtime and configuration before embedding documents. Its offline CI commands passed locally and in hosted push and pull-request runs; see the [verification record](LOCAL_DEMO.md#phase-4-local-verification). Broader runtime validation, service setup for the original components, and deployment remain future work. [Limitations](LIMITATIONS.md), [security notes](SECURITY.md), and the [roadmap](../ROADMAP.md) describe what remains.
+The independent slice selects OpenAI and a local index, pins Node.js 24.21.0, and validates runtime and configuration before embedding documents. Its offline CI commands passed locally and in hosted push and pull-request runs; see the [verification record](LOCAL_DEMO.md#runtime-and-ci-verification). Broader runtime validation, service setup for the original components, and deployment remain future work. [Limitations](LIMITATIONS.md) and [security notes](SECURITY.md) describe the verification boundaries.

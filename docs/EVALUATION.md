@@ -1,8 +1,8 @@
-# Evaluation plan
+# Evaluation methodology
 
-**Status: formal evaluation methodology, with a focused Phase 3 demo harness now available.** No formal benchmark results have been produced. The independent demo includes four fictional documents, offline tests, and live scenarios; an expanded dataset and formal evaluation remain later phases.
+The demo has a focused verification harness; no formal benchmark results have been produced. The independent demo includes four fictional documents, offline tests, and live scenarios; the corpus is limited and no formal evaluation has been completed.
 
-The first goal is a small, repeatable demonstration that answers from fictional documents and handles follow-up questions. Numbers should help a reviewer understand where it succeeds and where it fails.
+Evaluation should measure both answers from fictional documents and follow-up handling, with results that show where the system succeeds and where it fails.
 
 ## Current focused checks
 

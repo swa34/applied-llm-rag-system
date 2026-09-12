@@ -6,11 +6,11 @@ This project is an independent reference implementation informed by professional
 
 Employer source code, proprietary documents, production credentials, internal prompts, private schemas, and confidential data must not be included in the showcase. Employer names and logos require explicit owner approval before use.
 
-The showcase documentation is original prose. It explains observed capabilities and design choices without reproducing employer application code or prompts. Examples in the design discussion and the four Phase 3 [sample documents](sample-data/fictional/README.md) are fictional. The local demo is independently written. Any additional organization and sample documents must be clearly labeled as fictional or attributed to an explicitly public source.
+The showcase documentation is original prose. It explains observed capabilities and design choices without reproducing employer application code or prompts. Examples in the design discussion and the four [sample documents](sample-data/fictional/README.md) are fictional. The local demo is independently written. Any additional organization and sample documents must be clearly labeled as fictional or attributed to an explicitly public source.
 
 ## What the review establishes
 
-The Phase 1 review covered the tracked files and locally available commit history in this repository. No obvious embedded credentials or private organizational identifiers were identified. That limited review does not certify ownership, establish the origin of every existing file, or guarantee that all confidential material would be detected.
+The initial review covered the tracked files and locally available commit history in this repository. No obvious embedded credentials or private organizational identifiers were identified. That limited review does not certify ownership, establish the origin of every existing file, or guarantee that all confidential material would be detected.
 
 Existing source files remain component examples with known limitations. No complete running application, production deployment, security certification, or measured performance result is claimed.
 

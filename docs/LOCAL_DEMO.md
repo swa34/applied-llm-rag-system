@@ -1,6 +1,6 @@
 # Local fictional-document demo
 
-Phase 3 adds an independent terminal demonstration using four invented Northbridge Learning Institute documents. It runs locally and calls OpenAI for embeddings, context resolution, and answers. Hosted inference incurs API usage charges. These tiny fixtures and focused scenarios demonstrate behavior to inspect; they are not a formal evaluation or evidence of production reliability.
+The demo provides a terminal application using four invented Northbridge Learning Institute documents. It runs locally and calls OpenAI for embeddings, context resolution, and answers. Hosted inference incurs API usage charges. These tiny fixtures and focused scenarios demonstrate behavior to inspect; they are not a formal evaluation or evidence of production reliability.
 
 Ten focused live checks passed on 2026-09-12. The verification record below describes the tested configuration, earlier failures, and limits of these checks.
 
@@ -30,7 +30,7 @@ DEMO_EMBED_MODEL=text-embedding-3-small
 
 The model variables are optional and default to the values shown when omitted. Empty values or values containing whitespace are rejected; remove an override to use its default. The API key must be nonempty and contain no whitespace. Validation errors name the setting without displaying its value. A generation-model override must support the structured Responses API request used by the demo, including its JSON schema and output limits. The default generation model is [GPT-5.6 Terra](https://developers.openai.com/api/docs/models/gpt-5.6-terra); set `DEMO_MODEL=gpt-5.6-luna` to select [GPT-5.6 Luna](https://developers.openai.com/api/docs/models/gpt-5.6-luna) for both context resolution and answers. These models use `reasoning: { effort: "none" }` and omit `temperature`, preserving the demo's non-reasoning request behavior and its 512/4,096-token output limits. Embeddings still use `text-embedding-3-small`.
 
-Both current models passed ten focused cases in the [Terra and Luna verification](#terra-and-luna-verification), with offline request-contract checks as well. Other model overrides require separate compatibility verification. The Phase 3 records below describe a previous configuration; they do not establish results for Terra or Luna.
+Both current models passed ten focused cases in the [Terra and Luna verification](#terra-and-luna-verification), with offline request-contract checks as well. Other model overrides require separate compatibility verification. The historical records below describe a previous configuration; they do not establish results for Terra or Luna.
 
 ```sh
 # Check the runtime and fictional corpus without credentials or network calls.
@@ -78,13 +78,13 @@ Try these separate conversations, using `/new` between them:
 
 [The GitHub Actions workflow](../.github/workflows/demo.yml) runs `npm test` and the CLI help command on pushes, pull requests, and manual dispatches. It uses Ubuntu 24.04 and the `.nvmrc` pin, pins action commits, grants read-only repository access, disables checkout credential persistence, and has a five-minute job limit. It needs no API secrets or package installation. Live scenarios remain an explicit local command.
 
-### Phase 4 local verification
+### Runtime and CI verification
 
 On 2026-09-12, the initial infrastructure-only verification passed the 54 offline tests present at that point on Linux with Node.js 24.21.0 and bundled npm 11.19.0. The subsequent Terra/Luna request and scenario regressions increased the suite to 57 tests before publication. A clean copy containing the public files and proposed changes, with no `.env` or installed packages, passed at both stages, along with the CLI help check. Configuration checks passed with a fake credential and rejected missing credentials and malformed model settings. The runtime download was checked against its official SHA-256 checksum.
 
 New regressions exercise actual abort signals with shortened test deadlines during both fetch and response-body reads, then verify a successful request using the same provider. Failed resolution, retrieval, and answer stages preserve prior conversation history and release the busy guard for the next turn. The body-timeout test reproduced the previous incorrect “invalid JSON” message before the fix.
 
-The workflow commands passed locally and in the first hosted [push run](https://github.com/swa34/applied-llm-rag-system/actions/runs/34699974219) and [pull-request run](https://github.com/swa34/applied-llm-rag-system/actions/runs/34699984732) on 2026-09-12 at commit `f572268`. Both hosted runs passed all 57 offline tests and the CLI help check. That initial infrastructure verification made no live API calls. The subsequent Terra/Luna migration and its live results are recorded below. The supported runtime policy is narrower than the original Phase 3 declaration; other operating systems and later Node 24 patches have not been locally tested.
+The workflow commands passed locally and in the first hosted [push run](https://github.com/swa34/applied-llm-rag-system/actions/runs/34699974219) and [pull-request run](https://github.com/swa34/applied-llm-rag-system/actions/runs/34699984732) on 2026-09-12 at commit `f572268`. Both hosted runs passed all 57 offline tests and the CLI help check. That initial infrastructure verification made no live API calls. The subsequent Terra/Luna migration and its live results are recorded below. The supported runtime policy is narrower than the original runtime declaration; other operating systems and later Node 24 patches have not been locally tested.
 
 ### Terra and Luna verification
 
@@ -112,7 +112,7 @@ The terminal displays answer citations with source paths, sections, and quotes o
 
 ## Verification record
 
-On 2026-09-12, the original Phase 3 implementation's final live scenario run passed ten focused checks against fourteen passages from the four fictional documents. The run timestamp was `2026-09-12T10:56:09.527Z`, using Node.js `25.8.1`, the previous generation-model configuration retained in the local report, and `text-embedding-3-small`. Inspection of all returned answer claims against their exact evidence quotes found no unsupported claims in that run. These results predate the Terra/Luna migration.
+On 2026-09-12, the original demo implementation's final live scenario run passed ten focused checks against fourteen passages from the four fictional documents. The run timestamp was `2026-09-12T10:56:09.527Z`, using Node.js `25.8.1`, the previous generation-model configuration retained in the local report, and `text-embedding-3-small`. Inspection of all returned answer claims against their exact evidence quotes found no unsupported claims in that run. These results predate the Terra/Luna migration.
 
 The live run used `npm run demo:cases -- --output local-exports/phase-3-results.json`. Twenty-one offline tests passed using `node --test --test-isolation=none demo/*.test.mjs`. The normal documented test command remains `npm test`; the recorded offline run disabled test isolation. Raw reports stay in the ignored local export directory and are not published as repository artifacts.
 
@@ -138,4 +138,4 @@ Each provider request has a 30-second deadline covering both connection/response
 
 HTTP 429 can indicate a rate limit or a quota issue. The demo suggests retrying later for rate limits and checking API credits and spending limits for quota issues; waiting does not resolve depleted credits. It does not read HTTP error bodies or retry automatically. Failed turns leave the previous completed conversation history intact.
 
-The demo has no persistent index, answer cache, streaming UI, or integration with the legacy application examples. Conversation isolation therefore does not validate contextual cache reuse. Retrieval coverage, model context resolution, and claim support can still fail even when the JSON schema and citation checks succeed. Formal evaluation, broader reliability work, security review, and portfolio presentation remain later phases in the [roadmap](../ROADMAP.md).
+The demo has no persistent index, answer cache, streaming UI, or integration with the legacy application examples. Conversation isolation therefore does not validate contextual cache reuse. Retrieval coverage, model context resolution, and claim support can still fail even when the JSON schema and citation checks succeed. The [evaluation methodology](EVALUATION.md) and [security notes](SECURITY.md) explain the limits of the available evidence.
