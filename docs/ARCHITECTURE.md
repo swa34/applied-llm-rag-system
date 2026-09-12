@@ -77,4 +77,4 @@ The browser client distinguishes JSON from SSE, receives source information, and
 
 Current evidence consists of source inspection and limited offline checks. There is no integrated health endpoint, application shutdown path, structured tracing, or verified deployment setup. Some components have catches, retries, or timing fields; these are not a system-wide reliability guarantee.
 
-Provider selection, supported runtimes, service setup, and an independent runnable slice belong to later approved phases. [Limitations](LIMITATIONS.md), [security notes](SECURITY.md), and the [phase tracker](../tasks/todo.md) record that work.
+Provider selection, supported runtimes, service setup, and an independent runnable slice are future work. [Limitations](LIMITATIONS.md), [security notes](SECURITY.md), and the [roadmap](../ROADMAP.md) describe what remains.

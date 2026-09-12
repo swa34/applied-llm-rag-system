@@ -5,6 +5,11 @@
 *.pem
 *.key
 
+# Local assistant memory and working notes
+/.Codex/
+/.codex/
+/tasks/
+
 # Dependencies and Python environments
 node_modules/
 .venv/

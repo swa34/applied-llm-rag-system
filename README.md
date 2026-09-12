@@ -86,15 +86,15 @@ No standalone license file is present. The earlier README's MIT label did not es
 
 ## Roadmap
 
-The [phase tracker](tasks/todo.md) records approvals, completed work, and acceptance checks for all eight phases.
+The [roadmap](ROADMAP.md) records the scope, status, and completion criteria for all eight phases.
 
 1. Audit the existing repository — complete.
 2. Correct documentation and establish an honest showcase — complete.
-3. Propose and build the smallest approved independent local demonstration.
+3. Build a small independent local demonstration.
 4. Add the infrastructure needed to reproduce it.
 5. Create a fictional corpus, including follow-up and adversarial questions.
 6. Run evaluations and publish results with their limitations.
 7. Review the implemented security controls and residual risks.
 8. Add a verified demonstration screenshot and finish the portfolio presentation.
 
-Later phases have not started. Each requires approval before implementation.
+Phases 3–8 are planned.

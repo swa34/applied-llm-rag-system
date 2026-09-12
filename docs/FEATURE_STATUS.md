@@ -42,4 +42,4 @@ The audit runtimes are recorded for context, not declared supported versions. No
 
 Use these labels: **Implemented**, **Partially implemented**, **Example only**, **Documentation only**, **Planned**, **Unverified**, or **Broken**. A feature should move to Implemented only when its declared scope works and the repository supplies evidence for that scope. Correcting prose does not advance implementation status.
 
-Track approvals in [tasks/todo.md](../tasks/todo.md), known gaps in [LIMITATIONS.md](LIMITATIONS.md), and future measurement requirements in [EVALUATION.md](EVALUATION.md).
+Track project milestones in [ROADMAP.md](../ROADMAP.md), known gaps in [LIMITATIONS.md](LIMITATIONS.md), and future measurement requirements in [EVALUATION.md](EVALUATION.md).
