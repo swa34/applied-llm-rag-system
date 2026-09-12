@@ -23,7 +23,7 @@ The active default is `gpt-5.6-terra`, with `gpt-5.6-luna` selectable through `D
 - An ingestion command exists, but a complete answer-generation server and chat endpoint are absent.
 - Cache storage expects database tables without accompanying setup migrations.
 - Python import paths are inconsistent across package and direct-script execution.
-- The demo tests and tiny fictional corpus do not cover these original components. The CI workflow covers only the independent demo; its first hosted run is pending publication. There is no formal evaluation result set.
+- The demo tests and tiny fictional corpus do not cover these original components. The CI workflow covers only the independent demo; its first hosted push and pull-request runs passed. There is no formal evaluation result set.
 
 The examples reference hosted model and vector services as well as Redis, PostgreSQL, and cloud storage. Listing those dependencies does not establish compatibility, availability, or a working local setup. The independent demo supplies its own documented execution path without connecting those services.
 

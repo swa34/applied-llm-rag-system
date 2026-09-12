@@ -80,7 +80,7 @@ On 2026-09-12, `npm test` passed all 54 offline tests on Linux with Node.js 24.2
 
 New regressions exercise actual abort signals with shortened test deadlines during both fetch and response-body reads, then verify a successful request using the same provider. Failed resolution, retrieval, and answer stages preserve prior conversation history and release the busy guard for the next turn. The body-timeout test reproduced the previous incorrect “invalid JSON” message before the fix.
 
-The workflow commands have been verified locally; a hosted GitHub Actions result is pending publication. That initial infrastructure verification made no live API calls. The subsequent Terra/Luna migration and its live results are recorded below. The supported runtime policy is narrower than the original Phase 3 declaration; other operating systems and later Node 24 patches have not been locally tested.
+The workflow commands passed locally and in the first hosted [push run](https://github.com/swa34/applied-llm-rag-system/actions/runs/34699974219) and [pull-request run](https://github.com/swa34/applied-llm-rag-system/actions/runs/34699984732) on 2026-09-12 at commit `f572268`. Both hosted runs passed all 57 offline tests and the CLI help check. That initial infrastructure verification made no live API calls. The subsequent Terra/Luna migration and its live results are recorded below. The supported runtime policy is narrower than the original Phase 3 declaration; other operating systems and later Node 24 patches have not been locally tested.
 
 ### Terra and Luna verification
 
