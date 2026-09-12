@@ -1,8 +1,16 @@
 # Evaluation plan
 
-**Status: methodology only. No benchmark results have been produced for this showcase.** Evaluation remains a later phase; this document does not claim that tests, a dataset, or a runnable harness already exist.
+**Status: formal evaluation methodology, with a focused Phase 3 demo harness now available.** No formal benchmark results have been produced. The independent demo includes four fictional documents, offline tests, and live scenarios; an expanded dataset and formal evaluation remain later phases.
 
 The first goal is a small, repeatable demonstration that answers from fictional documents and handles follow-up questions. Numbers should help a reviewer understand where it succeeds and where it fails.
+
+## Current focused checks
+
+The [local demo guide](LOCAL_DEMO.md) documents `npm test` for deterministic offline checks and `npm run demo:cases` for live provider scenarios. Ten focused live checks passed on 2026-09-12; the [verification record](LOCAL_DEMO.md#verification-record) documents earlier prompt failures and known-case tuning. The harness records resolved queries, retrieved passages, citations, outcomes, timing, and usage for review.
+
+These cases exercise travel and tuition follow-ups with identical wording, ambiguous approvals, a password reset topic change, and a travel expense absent from the corpus. They are development fixtures, not held-out examples. Exact quote and source-membership checks do not score semantic entailment, and a scenario pass is not a general groundedness or reliability result. The demo has no answer cache, so these checks cannot establish behavior with warm caches.
+
+The methodology below describes the broader evidence still needed.
 
 ## Build a useful test set
 

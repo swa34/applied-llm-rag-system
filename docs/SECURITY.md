@@ -10,6 +10,8 @@ The examples include authentication handling for crawling, request delays, some 
 
 There is no complete chat server in the checkout against which to verify authentication, authorization, request isolation, or server-side secret handling.
 
+The independent [Phase 3 terminal demo](LOCAL_DEMO.md) uses fictional Markdown, keeps the API key in the local Node process, bounds provider requests, and checks cited source membership and exact quotation text. Offline checks cover failed-turn rollback and separate conversation histories. These scoped checks do not establish prompt-injection resistance, semantic support for arbitrary claims, or a multi-user access boundary. The original examples below remain unchanged.
+
 ## Findings from the initial review
 
 | Area | Observed behavior | Why it matters for a future demo |
