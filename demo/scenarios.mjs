@@ -4,14 +4,16 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { createDemo, corpusDirectory } from './setup.mjs';
 
-import { cases, checkScenario } from './scenario-checks.mjs';
+import { checkScenario, loadDevelopmentChecks } from './scenario-checks.mjs';
+import { developmentSuitePath } from './dataset.mjs';
 
 async function main() {
   const args = process.argv.slice(2);
   if (args.length && (args.length !== 2 || args[0] !== '--output')) {
-    throw new Error('Usage: npm run demo:cases -- [--output local-exports/phase-3-results.json]');
+    throw new Error('Usage: npm run demo:cases -- [--output local-exports/development-v1-results.json]');
   }
   const demo = await createDemo();
+  const { cases, suite: developmentSuite } = await loadDevelopmentChecks();
   const conversations = new Map();
   const results = [];
   for (const test of cases) {
@@ -32,12 +34,16 @@ async function main() {
   const files = [...new Set(demo.retriever.chunks.map(chunk => chunk.file))];
   const corpus = await Promise.all(files.map(async file => ({ file,
     sha256: createHash('sha256').update(await readFile(join(corpusDirectory, file))).digest('hex') })));
+  const suiteSha256 = createHash('sha256').update(await readFile(developmentSuitePath)).digest('hex');
   let baseRevision = 'unavailable';
   try { baseRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch {}
   const report = {
-    kind: 'Phase 3 live smoke checks; pattern checks do not establish semantic correctness',
+    kind: 'Development live checks; pattern checks do not establish semantic correctness',
     timestamp: new Date().toISOString(), baseRevision, sourceState: 'working checkout; may include uncommitted changes',
     runtime: process.version, model: demo.provider.model, embeddingModel: demo.provider.embeddingModel,
+    dataset: { id: demo.dataset.corpusId, version: demo.dataset.corpusVersion },
+    suite: { id: developmentSuite.suiteId, version: developmentSuite.suiteVersion,
+      split: developmentSuite.split, sha256: suiteSha256 },
     retrieval: { type: 'local cosine and keyword reciprocal rank fusion',
       lexicalScoring: 'distinct query-term overlap; no IDF or length normalization',
       topK: 6, rankConstant: 60, answerCache: false },

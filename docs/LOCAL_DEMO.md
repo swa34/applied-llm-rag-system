@@ -1,8 +1,8 @@
 # Local fictional-document demo
 
-The demo provides a terminal application using four invented Northbridge Learning Institute documents. It runs locally and calls OpenAI for embeddings, context resolution, and answers. Hosted inference incurs API usage charges. These tiny fixtures and focused scenarios demonstrate behavior to inspect; they are not a formal evaluation or evidence of production reliability.
+The demo provides a terminal application using ten invented Northbridge Learning Institute documents and 38 versioned evidence passages. It runs locally and calls OpenAI for embeddings, context resolution, and answers. Hosted inference incurs API usage charges. These compact fixtures and development scenarios demonstrate behavior to inspect; they are not a formal evaluation or evidence of production reliability.
 
-Ten focused live checks passed on 2026-09-12. The verification record below describes the tested configuration, earlier failures, and limits of these checks.
+Ten focused live checks passed on the earlier four-document corpus on 2026-09-12. The verification record below describes that historical configuration, earlier failures, and limits. The expanded 21-turn development suite and separate held-out suite have not been run against a live model.
 
 ## Run it
 
@@ -33,7 +33,7 @@ The model variables are optional and default to the values shown when omitted. E
 Both current models passed ten focused cases in the [Terra and Luna verification](#terra-and-luna-verification), with offline request-contract checks as well. Other model overrides require separate compatibility verification. The historical records below describe a previous configuration; they do not establish results for Terra or Luna.
 
 ```sh
-# Check the runtime and fictional corpus without credentials or network calls.
+# Check the runtime, versioned corpus, and both case manifests without credentials or network calls.
 npm run check
 
 # Check local credential/model syntax too, without contacting OpenAI.
@@ -48,19 +48,19 @@ npm run demo -- "Who approves an overnight trip?"
 # Save the answer and citations without npm's command header.
 npm run --silent demo -- "Who approves an overnight trip?" > answer.txt
 
-# Replay focused scenarios using live, billed OpenAI calls.
+# Replay the development scenarios using live, billed OpenAI calls.
 npm run demo:cases
 
 # Write the scenario JSON report to a local file instead of stdout.
-npm run demo:cases -- --output local-exports/phase-3-results.json
+npm run demo:cases -- --output local-exports/development-v1-results.json
 
 # Run deterministic offline tests without API calls or credentials.
 npm test
 ```
 
-In interactive mode, `/new` starts a fresh conversation and `/exit` quits. A successful interactive turn clears the failure exit status from an earlier turn. With piped input, any failed turn makes the process exit nonzero even if later turns succeed. Each application start loads and embeds the fictional corpus again.
+In interactive mode, `/new` starts a fresh conversation and `/exit` quits. A successful interactive turn clears the failure exit status from an earlier turn. With piped input, any failed turn makes the process exit nonzero even if later turns succeed. Each application start loads and embeds the fictional corpus again. The scenario command reads only the development manifest; there is intentionally no held-out execution command before the evaluation phase.
 
-Answers and citations go to stdout. The banner, prompts, diagnostics, and errors go to stderr, so redirecting stdout saves the answer text without those details. The scenario command writes its JSON result to stdout by default; `--output` writes the report to the chosen local file instead. Use `npm run --silent demo:cases` when redirecting that JSON to avoid npm's command header.
+Answers and citations go to stdout. The banner, prompts, diagnostics, and errors go to stderr, so redirecting stdout saves the answer text without those details. The scenario command writes its JSON result to stdout by default; `--output` writes the report to the chosen local file instead. Its report includes corpus file hashes plus dataset and development-suite identities and the suite hash. Use `npm run --silent demo:cases` when redirecting that JSON to avoid npm's command header.
 
 Try these separate conversations, using `/new` between them:
 
@@ -74,7 +74,7 @@ Try these separate conversations, using `/new` between them:
 
 ## Reproducibility and CI
 
-`npm test` first runs the offline runtime/corpus check, then the test suite. It does not load `.env` or call hosted APIs. `npm run demo:check` loads the optional root `.env` using Node's environment-file support; existing process variables take precedence. It checks local setting syntax and the corpus, without printing setting values, embedding documents, authenticating the key, or checking model access. A successful configuration check does not establish provider availability or sufficient API quota.
+`npm test` first runs the offline runtime/dataset check, then the test suite. It does not load `.env` or call hosted APIs. The preflight validates the corpus allowlist, stable passage mappings, development and held-out schemas, source references, coverage tags, and split isolation. `npm run demo:check` loads the optional root `.env` using Node's environment-file support; existing process variables take precedence. It checks local setting syntax and the dataset, without printing setting values, embedding documents, authenticating the key, or checking model access. A successful configuration check does not establish provider availability or sufficient API quota.
 
 [The GitHub Actions workflow](../.github/workflows/demo.yml) runs `npm test` and the CLI help command on pushes, pull requests, and manual dispatches. It uses Ubuntu 24.04 and the `.nvmrc` pin, pins action commits, grants read-only repository access, disables checkout credential persistence, and has a five-minute job limit. It needs no API secrets or package installation. Live scenarios remain an explicit local command.
 
@@ -96,11 +96,19 @@ The final runs loaded the earlier checker and retained raw counts of 8/10 and 9/
 
 ### Review follow-up verification
 
-The missing/unreadable `.nvmrc` regression increases the current suite to **58 tests**, all passing on Node 24.21.0. It reproduces the former import-time filesystem stack trace in a temporary incomplete checkout, then verifies a clear startup error from the preflight, chat CLI, and scenario runner. The runtime range is unchanged. Counts of 54 and 57 above describe earlier verification stages.
+The missing/unreadable `.nvmrc` regression increased the suite at that stage to **58 tests**, all passing on Node 24.21.0. It reproduces the former import-time filesystem stack trace in a temporary incomplete checkout, then verifies a clear startup error from the preflight, chat CLI, and scenario runner. The runtime range is unchanged. Counts of 54 and 57 above describe earlier verification stages.
+
+### Versioned dataset verification
+
+The dataset expansion increases the current suite to **65 tests**, all passing locally on Node 24.21.0 in both the working checkout and a clean copy without credentials or installed packages. The preflight loads 38 allowlisted passages from ten documents, validates 13 development conversations and eight held-out conversations, and rejects invalid passage mappings or split overlap. Regression tests prove that unlisted Markdown is not ingested, passage IDs remain stable when section text changes, every answer criterion resolves to an existing passage and is present in that source, malformed rubrics are rejected, and the original ten tuned turns remain development-only fixtures.
+
+The expanded development runner contains 21 turns and has not been run against a live model. The eleven held-out turns have been schema-checked only; they have not been sent to the resolver, answer model, or embedding endpoint. No accuracy, retrieval, latency, or cost result is claimed for the expanded dataset. Hosted CI verification also remains pending publication.
 
 ## How it works
 
-The loader reads Markdown from [the fictional corpus](../sample-data/fictional/README.md), excluding its README. Headings define passages, with a maximum passage length of 1,800 characters. Long lines split at whitespace when possible, or at the size limit when necessary. The splits preserve exact source text and the original line references, including when several passages begin on the same line. Each passage carries its file, section, source line, and a content-derived identifier. Identifiers are repeatable for unchanged source content and position; edits can change them.
+The [fictional dataset](../sample-data/fictional/README.md) is versioned independently from the application. Its corpus manifest explicitly lists the ten retrievable Markdown files and assigns human-stable IDs to all 38 heading passages. The runtime dataset loader does not ingest README files, case rubrics, or unlisted Markdown. Headings define passages, with a maximum passage length of 1,800 characters. Long lines split at whitespace when possible, or at the size limit when necessary. The splits preserve exact source text and original line references. A declared passage must map to exactly one nonempty section within the limit; changing its body does not silently change its ID.
+
+Development and held-out rubrics live outside the evidence directory. Each case contains a complete ordered conversation, and each turn declares its expected status and source-linked factual criteria where applicable. The development runner creates one conversation per case and never imports the held-out manifest. Because the repository is public, held-out means withheld from tuning rather than secret. Running or tuning against those cases would expose them and require a new evaluation set.
 
 OpenAI embeds each passage at startup. The in-memory index caches normalized passage vectors and keyword sets. For each resolved question, retrieval embeds and normalizes the query, ranks passages by cosine similarity and by distinct keyword overlap, then combines those rankings with reciprocal rank fusion. The keyword score counts distinct shared terms without inverse document frequency or passage-length normalization. It favors passages covering more query terms; it is not BM25. Retrieval returns the top six passages. This local ranking choice makes both semantic matches and explicit policy terms available for inspection; six returned passages do not guarantee sufficient evidence.
 
