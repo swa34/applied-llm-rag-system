@@ -127,6 +127,15 @@ test('refusals, incomplete responses, and invalid structured text are rejected',
   }
 });
 
+test('structured-response failures preserve returned model and billed usage metadata', async () => {
+  const { provider } = mockProvider({ ...completed({}), status: 'incomplete' });
+  await assert.rejects(provider.resolve('Question', []), error => {
+    assert.match(error.message, /did not complete/);
+    assert.deepEqual(error.responseMetadata, { model: 'fake-model', usage: { output_tokens: 7 } });
+    return true;
+  });
+});
+
 test('incomplete responses explain recognized causes without exposing provider details', async () => {
   const cases = [
     ['max_output_tokens', 'OpenAI reached the output token limit before completing the response. Try a narrower question or increase the output token limit.'],

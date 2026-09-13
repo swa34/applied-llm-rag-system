@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "kind": "Frozen local RAG held-out evaluation baseline",
+  "createdAt": "2026-09-12T20:00:21.824Z",
+  "git": {
+    "revision": "ecd09ecb35e20e58348e9ed739d8362f4a27f286",
+    "branch": "swa34/phase-6-evaluation",
+    "sourceState": "clean tracked checkout"
+  },
+  "runtime": {
+    "node": "v24.21.0",
+    "platform": "linux",
+    "architecture": "x64"
+  },
+  "execution": {
+    "models": [
+      "gpt-5.6-terra",
+      "gpt-5.6-luna"
+    ],
+    "embeddingModel": "text-embedding-3-small",
+    "repetitions": 3,
+    "retries": 0,
+    "costCeilingUsd": 2,
+    "priorDevelopmentEstimatedCostUsd": 0.34029111
+  },
+  "retrieval": {
+    "type": "local cosine and keyword reciprocal rank fusion",
+    "lexicalScoring": "distinct query-term overlap; no IDF or length normalization",
+    "topK": 6,
+    "rankConstant": 60,
+    "answerCache": false
+  },
+  "conversation": {
+    "completedTurnHistoryLimit": 6
+  },
+  "responses": {
+    "store": false,
+    "reasoningEffort": "none",
+    "resolverMaxOutputTokens": 512,
+    "answerMaxOutputTokens": 4096
+  },
+  "dataset": {
+    "corpusId": "northbridge-fictional",
+    "corpusVersion": "1.0.0",
+    "developmentSuiteId": "northbridge-development",
+    "heldoutSuiteId": "northbridge-heldout"
+  },
+  "plannedDenominatorsPerRun": {
+    "conversations": 8,
+    "turns": 11,
+    "expectedAnswers": 9,
+    "expectedClarifications": 1,
+    "expectedAbstentions": 1,
+    "expectedSourcePairs": 12,
+    "followUps": 3
+  },
+  "pricing": {
+    "effectiveDate": "2026-09-12",
+    "currency": "USD",
+    "unit": "per_1m_tokens",
+    "sources": {
+      "gpt-5.6-terra": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+      "gpt-5.6-luna": "https://developers.openai.com/api/docs/models/gpt-5.6-luna",
+      "text-embedding-3-small": "https://developers.openai.com/api/docs/models/text-embedding-3-small"
+    },
+    "rates": {
+      "gpt-5.6-terra": {
+        "input": 2,
+        "cachedInput": 0.2,
+        "output": 12
+      },
+      "gpt-5.6-luna": {
+        "input": 0.2,
+        "cachedInput": 0.02,
+        "output": 1.2
+      },
+      "text-embedding-3-small": {
+        "input": 0.02,
+        "cachedInput": 0.02,
+        "output": 0
+      }
+    }
+  },
+  "developmentShakedown": [
+    {
+      "path": "local-exports/phase-6-development-terra.json",
+      "sha256": "164515e77e53d09fb38fe5a517f91bfb57816383c31f7e0053abf8bef8c9f56a",
+      "model": "gpt-5.6-terra",
+      "timestamp": "2026-09-12T19:50:22.006Z",
+      "baseRevision": "51359db9e660db85e8d8971d3fea1f8a645bed9f",
+      "passed": 14,
+      "total": 21,
+      "observedUsageCostUsd": 0.0606341,
+      "conservativeCostUsd": 0.33333333,
+      "usageUnavailableForFailedTurns": 1
+    },
+    {
+      "path": "local-exports/phase-6-development-luna.json",
+      "sha256": "31fe46aff14c64d6b9d54f56f4527cfc4c15e1acfa4bf78618ffb0b4aa421983",
+      "model": "gpt-5.6-luna",
+      "timestamp": "2026-09-12T19:51:30.137Z",
+      "baseRevision": "51359db9e660db85e8d8971d3fea1f8a645bed9f",
+      "passed": 17,
+      "total": 21,
+      "observedUsageCostUsd": 0.00695778,
+      "conservativeCostUsd": 0.00695778,
+      "usageUnavailableForFailedTurns": 0
+    }
+  ],
+  "artifacts": [
+    {
+      "path": ".nvmrc",
+      "sha256": "73fb1b615e2043a933be1c0895cde4358036acc28d785692509b822aa53c761f"
+    },
+    {
+      "path": "demo/chat.mjs",
+      "sha256": "c7ba23100fdcb5c514e05c38acef8dea28afb80e2967582581f8f16f5b6800ff"
+    },
+    {
+      "path": "demo/config.mjs",
+      "sha256": "3520e63e985ffe4c6d3873da270ba89f031ef68d777c7992ff5b1e00b6eb7458"
+    },
+    {
+      "path": "demo/dataset.mjs",
+      "sha256": "75b7fb0563bc37a9f877faf53686404b5ee20f6baaac3559373b17c878379888"
+    },
+    {
+      "path": "demo/evaluate.mjs",
+      "sha256": "0592af46da1ff8bbb7c282195ad5c2457982952eff55928c6a3e9c343d8abed2"
+    },
+    {
+      "path": "demo/evaluation-freeze.mjs",
+      "sha256": "bc67e53de1cbc01509c5fce5ab8d83e167fc8549d27070b47f62bc69d7595cc7"
+    },
+    {
+      "path": "demo/evaluation.mjs",
+      "sha256": "8fb9d24e1709bbc0885128421bb6c5842bc3177173ab9d482badef4174e9a915"
+    },
+    {
+      "path": "demo/provider.mjs",
+      "sha256": "31237ff0a4bdcaf33ca8782fa109400f321c67c16e0d3cbf997b83c7518fa20b"
+    },
+    {
+      "path": "demo/retrieval.mjs",
+      "sha256": "63b24515814c5758c73f125c03ca9a8fd7f0e72b7ea65bd6083b44f47fb4ae2b"
+    },
+    {
+      "path": "demo/scenario-checks.mjs",
+      "sha256": "0ccf18f3fbeee005b6fce4171fe5c9e103a93c396483fd6d926c1cdda9f1fb4e"
+    },
+    {
+      "path": "demo/scenarios.mjs",
+      "sha256": "1deb4216012c29fa435866c91069d679272e89c3e45fbcae9fe30e9f8640bb09"
+    },
+    {
+      "path": "demo/setup.mjs",
+      "sha256": "5dc8ca3a665d01b725616a7a647dc4ed583b778ab32e9ecbfe4a6715c30c64f5"
+    },
+    {
+      "path": "evaluation/fictional/v1/development.json",
+      "sha256": "ff7544fdafc64d05d56c532d9104b0721f00b95a7d9511bf0382466fc68f6533"
+    },
+    {
+      "path": "evaluation/fictional/v1/heldout.json",
+      "sha256": "ffdec06c2211324f77be171a05d86f0d04f9c16c4a17e9b05caf96a286e81517"
+    },
+    {
+      "path": "package.json",
+      "sha256": "ecaf5fc3953adfe3509c11fe2fb52ddc5b7ebe4a1f20ca6db1221c5f013f0cbb"
+    },
+    {
+      "path": "sample-data/fictional/v1/corpus.json",
+      "sha256": "89292a0f3ca2dc272d44a55e923b9db6493ca670d544a84f22a1d71dd579761a"
+    },
+    {
+      "path": "sample-data/fictional/v1/documents/caregiver-leave.md",
+      "sha256": "1936a5353d0b70f8c3cdb544ea13784c1bb52999549b15a825b0fdbabad0be68"
+    },
+    {
+      "path": "sample-data/fictional/v1/documents/community-studio-booking.md",
+      "sha256": "d9dea5ce348bfe4fe22d3a5ba4126f56e5d539cf30e09bdf7fcaa4ed0aff761e"
+    },
+    {
+      "path": "sample-data/fictional/v1/documents/community-studio-operations-bulletin.md",
+      "sha256": "c15eb126d8cdb6ee799dae125d067d964409b1d1684d9f1c7bd4c0c5acaef890"
+    },
+    {
+      "path": "sample-data/fictional/v1/documents/commuter-benefit.md",
+      "sha256": "3fbfc13422544f0a00e4a91ffb2f4c404583cb3dddc84bc792b12b4d654aba87"
+    },
+    {
+      "path": "sample-data/fictional/v1/documents/hybrid-work.md",
+      "sha256": "6de9ed73055d711682b6cc3b902307ed6396dffe3b4b458f777121ec01131a1a"
+    },
+    {
+      "path": "sample-data/fictional/v1/documents/password-reset.md",
+      "sha256": "a703ef6ddb4563140920fffb4ab69fb419072877292f5d0c2eed3de1ec43d18d"
+    },
+    {
+      "path": "sample-data/fictional/v1/documents/purchasing.md",
+      "sha256": "031c036b13b295d5742fa6614088ab366b69a9d3d849bf4c982cdde3a7ec2b14"
+    },
+    {
+      "path": "sample-data/fictional/v1/documents/travel.md",
+      "sha256": "74ee8c552d6a9e25469664c8c2479911c3d0c6f602231678cb95dba856a048ca"
+    },
+    {
+      "path": "sample-data/fictional/v1/documents/tuition.md",
+      "sha256": "2e3f977a2e97c75d3d3859b72e2a7efbaaa680236d95bf0df714791efc8833ff"
+    },
+    {
+      "path": "sample-data/fictional/v1/documents/visitor-access.md",
+      "sha256": "31d2cf168d24fcc5b38129bd9c8cca3c8c3e171ffb501adb8f366add86c3d1c5"
+    }
+  ]
+}

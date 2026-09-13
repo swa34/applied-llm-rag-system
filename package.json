@@ -6,6 +6,8 @@
     "demo:check": "node --env-file-if-exists=.env demo/check.mjs --config",
     "demo": "node --env-file-if-exists=.env demo/cli.mjs",
     "demo:cases": "node --env-file-if-exists=.env demo/scenarios.mjs",
+    "eval:freeze": "node demo/evaluate.mjs freeze",
+    "eval:heldout": "node --env-file-if-exists=.env demo/evaluate.mjs run",
     "pretest": "npm run check",
     "test": "node --test demo/*.test.mjs"
   },
