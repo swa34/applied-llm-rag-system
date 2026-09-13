@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Conversation } from './chat.mjs';
 import { loadDevelopmentChecks } from './scenario-checks.mjs';
-import { assertExpectedHeldoutDenominators, EVALUATION_MODELS, nearestRank, PRICING,
+import { assertExpectedHeldoutDenominators, EVALUATION_COST_CEILING_USD, EVALUATION_MODELS, nearestRank, PRICING,
   scoreFailedTurn, scoreTurn, summarizeRun } from './evaluation.mjs';
 import { assertDeclaredEvaluationControls, assertFreezeMatches, finalizeJsonArtifact,
-  reserveJsonArtifact, resolveExportPath, writeJsonExclusive } from './evaluation-freeze.mjs';
+  readExportArtifact, readFreeze, reserveJsonArtifact, resolveExportPath, writeJsonExclusive } from './evaluation-freeze.mjs';
 import { executeCases, parseArguments, priorHeldoutCost, sanitizeErrorMessage } from './evaluate.mjs';
 
 test('dedicated evaluation arguments require every explicit held-out control', () => {
@@ -162,7 +162,8 @@ test('run summary preserves planned denominators, percentiles, usage, and estima
     { expectedStatus: 'clarify', turnIndex: 1, executionStatus: 'completed', status: 'clarify',
       attemptMs: 12, timings: { resolutionMs: 12, retrievalMs: 0, answerMs: 0, totalMs: 12 },
       usage: { resolution: { input_tokens: 50, output_tokens: 5 } }, ...clarifyResult,
-      automatic: scoreTurn(clarifyTest, clarifyResult) },
+      automatic: { ...scoreTurn(clarifyTest, clarifyResult),
+        expectedSourceCitationCoverage: 99, expectedFactPatternCoverage: 99 } },
     { expectedStatus: 'answered', turnIndex: 0, executionStatus: 'error', status: 'error', attemptMs: 7,
       automatic: { ...scoreFailedTurn({ status: 'answered', facts: [
         { sourceId: 'src.three', patterns: [] },
@@ -208,22 +209,28 @@ test('run summary charges usage returned with a failed provider stage', () => {
 });
 
 test('freeze comparison ignores creation time but detects source or configuration changes', () => {
-  const first = { createdAt: 'first', execution: { repetitions: 3 }, artifacts: [{ path: 'a', sha256: '1' }] };
-  const second = { ...structuredClone(first), createdAt: 'second' };
+  const first = { createdAt: 'first', git: { revision: 'abc', branch: 'feature', sourceState: 'clean tracked checkout' },
+    execution: { repetitions: 3 }, artifacts: [{ path: 'a', sha256: '1' }] };
+  const second = { ...structuredClone(first), createdAt: 'second', git: { ...first.git, branch: '' } };
   assert.doesNotThrow(() => assertFreezeMatches(first, second));
+  assert.equal(first.git.branch, 'feature');
+  assert.equal(second.git.branch, '');
+  second.git.revision = 'def';
+  assert.throws(() => assertFreezeMatches(first, second), /does not match/);
+  second.git.revision = first.git.revision;
   second.artifacts[0].sha256 = '2';
   assert.throws(() => assertFreezeMatches(first, second), /does not match/);
 });
 
 test('declared evaluation controls reject modified model, repetition, retry, and ceiling values', () => {
   const frozen = { execution: { models: [...EVALUATION_MODELS], embeddingModel: 'text-embedding-3-small',
-    repetitions: 3, retries: 0, costCeilingUsd: 2 } };
+    repetitions: 3, retries: 0, costCeilingUsd: EVALUATION_COST_CEILING_USD } };
   assert.doesNotThrow(() => assertDeclaredEvaluationControls(frozen));
   for (const mutate of [
     value => value.execution.models.push('other'),
     value => { value.execution.repetitions = 4; },
     value => { value.execution.retries = 1; },
-    value => { value.execution.costCeilingUsd = 3; },
+    value => { value.execution.costCeilingUsd = EVALUATION_COST_CEILING_USD + 1; },
   ]) {
     const altered = structuredClone(frozen);
     mutate(altered);
@@ -246,6 +253,41 @@ test('evaluation artifacts are confined to local exports and never overwritten',
   assert.match(finalized.sha256, /^[a-f0-9]{64}$/);
   assert.deepEqual(JSON.parse(await readFile(finalized.path, 'utf8')), { completed: true });
   await assert.rejects(reserveJsonArtifact('local-exports/reserved.json', {}, root), /Refusing to overwrite/);
+
+  const insideRepository = join(root, 'elsewhere');
+  await mkdir(insideRepository);
+  await symlink(insideRepository, join(root, 'local-exports', 'internal-redirect'), 'dir');
+  await assert.rejects(reserveJsonArtifact('local-exports/internal-redirect/child/run.json', {}, root),
+    /escapes local-exports/);
+  await assert.rejects(readFile(join(insideRepository, 'child', 'run.json')), error => error.code === 'ENOENT');
+
+  const outsideRepository = await mkdtemp(join(tmpdir(), 'rag-evaluation-outside-'));
+  t.after(() => rm(outsideRepository, { recursive: true, force: true }));
+  await symlink(outsideRepository, join(root, 'local-exports', 'external-redirect'), 'dir');
+  await assert.rejects(reserveJsonArtifact('local-exports/external-redirect/child/run.json', {}, root),
+    /escapes local-exports/);
+  await assert.rejects(readFile(join(outsideRepository, 'child', 'run.json')), error => error.code === 'ENOENT');
+
+  const linkedFreezeTarget = join(insideRepository, 'freeze.json');
+  await writeFile(linkedFreezeTarget, JSON.stringify({ schemaVersion: 1,
+    kind: 'Frozen local RAG held-out evaluation baseline' }));
+  await symlink(linkedFreezeTarget, join(root, 'local-exports', 'linked-freeze.json'), 'file');
+  await assert.rejects(readExportArtifact('local-exports/linked-freeze.json', root), /escapes local-exports/);
+  await assert.rejects(readFreeze('local-exports/linked-freeze.json', root), /escapes local-exports/);
+  await assert.rejects(writeJsonExclusive('local-exports/linked-freeze.json', {}, root), /Refusing to overwrite/);
+
+  const linkedRoot = await mkdtemp(join(tmpdir(), 'rag-evaluation-linked-root-'));
+  t.after(() => rm(linkedRoot, { recursive: true, force: true }));
+  await mkdir(join(linkedRoot, 'elsewhere'));
+  await symlink(join(linkedRoot, 'elsewhere'), join(linkedRoot, 'local-exports'), 'dir');
+  await assert.rejects(writeJsonExclusive('local-exports/run.json', {}, linkedRoot), /physical local-exports/);
+
+  const externalRoot = await mkdtemp(join(tmpdir(), 'rag-evaluation-external-root-'));
+  const externalStore = await mkdtemp(join(tmpdir(), 'rag-evaluation-external-store-'));
+  t.after(() => Promise.all([rm(externalRoot, { recursive: true, force: true }),
+    rm(externalStore, { recursive: true, force: true })]));
+  await symlink(externalStore, join(externalRoot, 'local-exports'), 'dir');
+  await assert.rejects(writeJsonExclusive('local-exports/run.json', {}, externalRoot), /physical local-exports/);
 });
 
 test('cost ledger reserves a full run share when a prior artifact has unknown billed usage', async t => {
@@ -257,7 +299,7 @@ test('cost ledger reserves a full run share when a prior artifact has unknown bi
   }, root);
   const freeze = { git: { revision: 'revision' }, pricing: PRICING,
     plannedDenominatorsPerRun: { turns: 11 },
-    execution: { priorDevelopmentEstimatedCostUsd: 0.1, costCeilingUsd: 2 } };
+    execution: { priorDevelopmentEstimatedCostUsd: 0.1, costCeilingUsd: EVALUATION_COST_CEILING_USD } };
   const total = await priorHeldoutCost(freeze, 'local-exports/phase-6-gpt-5.6-terra-run-2.json',
     'freeze-hash', root);
   assert.equal(Number(total.toFixed(8)), 0.43333333);

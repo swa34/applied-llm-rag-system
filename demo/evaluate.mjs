@@ -7,8 +7,8 @@ import { createDemo } from './setup.mjs';
 import { heldoutSuitePath, loadEvaluationData } from './dataset.mjs';
 import { assertExpectedHeldoutDenominators, EMBEDDING_MODEL, EVALUATION_MODELS, EVALUATION_REPETITIONS,
   estimateUsageCost, scoreFailedTurn, scoreTurn, summarizeRun } from './evaluation.mjs';
-import { createFreeze, evaluationRunPath, finalizeJsonArtifact, readFreeze, reserveJsonArtifact,
-  resolveExportPath, repositoryRoot, sha256, verifyFreeze, writeJsonExclusive } from './evaluation-freeze.mjs';
+import { createFreeze, evaluationRunPath, finalizeJsonArtifact, readExportArtifact, readFreeze,
+  reserveJsonArtifact, repositoryRoot, sha256, verifyFreeze, writeJsonExclusive } from './evaluation-freeze.mjs';
 
 const usage = 'Usage:\n' +
   '  npm run eval:freeze -- --output local-exports/phase-6-freeze.json\n' +
@@ -156,7 +156,7 @@ export async function priorHeldoutCost(freeze, currentOutput, freezeSha256, root
     const path = evaluationRunPath(model, run);
     if (path === currentOutput) continue;
     try {
-      const artifact = JSON.parse(await readFile(resolveExportPath(path, root)));
+      const artifact = JSON.parse(await readExportArtifact(path, root));
       total += validatePriorArtifact(artifact, { model, run, freeze, freezeSha256, unknownUsageReserve });
     } catch (error) {
       if (error.code !== 'ENOENT') {

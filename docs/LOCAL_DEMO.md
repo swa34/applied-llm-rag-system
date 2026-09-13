@@ -85,7 +85,17 @@ Try these separate conversations, using `/new` between them:
 
 The Phase 6 runner is intentionally stricter than the ordinary development command. Freeze creation requires a clean tracked checkout, the two canonical development reports, the pinned runtime, and exact approved denominators. It records the clean revision, configuration, pricing sources and date, corpus/suite/application/evaluator hashes, and a conservative phase-cost ledger. Each held-out slot is reserved with exclusive creation before corpus embedding, so an existing or invalid output fails before a billed call. There are no retries; failed and dependent blocked turns remain in their planned denominators.
 
-The six published reports were produced from commit `ecd09ec`. To reproduce that exact baseline, check out that revision, copy the two [published development reports](../evaluation/fictional/v1/results/phase-6/development/) to the canonical `local-exports/phase-6-development-*.json` paths, and use the documented commands. The result artifacts added after the baseline commit intentionally change the working revision, so its original freeze will reject the later documentation checkout. Run outputs use exclusive filenames and should be written in a fresh checkout; do not overwrite or retry the published slots.
+The six published reports were produced from commit `ecd09ec`. The result artifacts added later in `10323e2` intentionally change the working revision, so the original freeze rejects that later checkout. In a fresh clone, restore the ignored inputs from the publication commit while checking out the exact baseline under its recorded branch name:
+
+```sh
+git switch -c swa34/phase-6-evaluation ecd09ec
+mkdir -p local-exports
+git show 10323e2:evaluation/fictional/v1/results/phase-6/development/gpt-5.6-terra.json > local-exports/phase-6-development-terra.json
+git show 10323e2:evaluation/fictional/v1/results/phase-6/development/gpt-5.6-luna.json > local-exports/phase-6-development-luna.json
+git show 10323e2:evaluation/fictional/v1/results/phase-6/freeze.json > local-exports/phase-6-freeze.json
+```
+
+These commands restore the historical prerequisites for inspection; do not rerun or overwrite the six published slots. New evaluations must create a new baseline, freeze, and output namespace rather than reuse the exposed Phase 6 cases. Post-evaluation harness hardening remains separate from the immutable reports and their recorded `ecd09ec` source hashes.
 
 The [Phase 6 report](../evaluation/fictional/v1/results/phase-6/README.md) links the exact freeze, six raw held-out reports, machine-readable aggregation, and all-turn manual review. These artifacts contain only invented data and passed a credential/private-path scan before publication.
 

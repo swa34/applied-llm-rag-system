@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdir, open, readFile, realpath } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assertExpectedHeldoutDenominators, EMBEDDING_MODEL, EVALUATION_MODELS,
+import { assertExpectedHeldoutDenominators, EMBEDDING_MODEL, EVALUATION_COST_CEILING_USD, EVALUATION_MODELS,
   EVALUATION_REPETITIONS, estimateUsageCost, PRICING } from './evaluation.mjs';
 
 export const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -42,7 +42,7 @@ function developmentCost(report) {
   }
   const usageUnavailableForFailedTurns = (report.results ?? []).filter(result => !result.passed && !result.usage).length;
   const conservativeCost = usageUnavailableForFailedTurns
-    ? Math.max(cost, 2 / (EVALUATION_MODELS.length * EVALUATION_REPETITIONS)) : cost;
+    ? Math.max(cost, EVALUATION_COST_CEILING_USD / (EVALUATION_MODELS.length * EVALUATION_REPETITIONS)) : cost;
   return { observedUsageCostUsd: Number(cost.toFixed(8)),
     conservativeCostUsd: Number(conservativeCost.toFixed(8)), usageUnavailableForFailedTurns };
 }
@@ -51,8 +51,11 @@ async function developmentShakedown(root, expected) {
   return Promise.all(EVALUATION_MODELS.map(async model => {
     const path = developmentReportPaths[model];
     let source;
-    try { source = await readFile(resolve(root, path)); }
-    catch { throw new Error(`Missing required development shakedown report ${path}.`); }
+    try { source = await readExportArtifact(path, root); }
+    catch (error) {
+      if (error.code === 'ENOENT') throw new Error(`Missing required development shakedown report ${path}.`);
+      throw error;
+    }
     let report;
     try { report = JSON.parse(source); } catch { throw new Error(`Development shakedown report ${path} is invalid JSON.`); }
     const actualTurnIds = (report.results ?? []).map(result => result.id);
@@ -106,7 +109,7 @@ export async function createFreeze({ root = repositoryRoot } = {}) {
     },
     runtime: { node: process.version, platform: process.platform, architecture: process.arch },
     execution: { models: [...EVALUATION_MODELS], embeddingModel: EMBEDDING_MODEL,
-      repetitions: EVALUATION_REPETITIONS, retries: 0, costCeilingUsd: 2,
+      repetitions: EVALUATION_REPETITIONS, retries: 0, costCeilingUsd: EVALUATION_COST_CEILING_USD,
       priorDevelopmentEstimatedCostUsd },
     retrieval: {
       type: 'local cosine and keyword reciprocal rank fusion',
@@ -127,6 +130,7 @@ export async function createFreeze({ root = repositoryRoot } = {}) {
 function comparable(freeze) {
   const copy = structuredClone(freeze);
   delete copy.createdAt;
+  if (copy.git) delete copy.git.branch;
   return copy;
 }
 
@@ -140,7 +144,7 @@ export function assertDeclaredEvaluationControls(frozen) {
   if (JSON.stringify(frozen.execution?.models) !== JSON.stringify(EVALUATION_MODELS) ||
     frozen.execution?.embeddingModel !== EMBEDDING_MODEL ||
     frozen.execution?.repetitions !== EVALUATION_REPETITIONS || frozen.execution?.retries !== 0 ||
-    frozen.execution?.costCeilingUsd !== 2) {
+    frozen.execution?.costCeilingUsd !== EVALUATION_COST_CEILING_USD) {
     throw new Error('Evaluation freeze contains unapproved model, repetition, retry, or cost controls.');
   }
 }
@@ -153,7 +157,7 @@ export async function verifyFreeze(frozen, options = {}) {
 }
 
 export async function readFreeze(path, root = repositoryRoot) {
-  const source = await readFile(resolveExportPath(path, root));
+  const source = await readExportArtifact(path, root);
   let value;
   try { value = JSON.parse(source); } catch { throw new Error('Evaluation freeze is not valid JSON.'); }
   if (value?.schemaVersion !== 1 || value?.kind !== 'Frozen local RAG held-out evaluation baseline') {
@@ -174,17 +178,53 @@ export function resolveExportPath(path, root = repositoryRoot) {
   return target;
 }
 
+function containsPath(root, target) {
+  const path = relative(root, target);
+  return path === '' || (path !== '..' && !path.startsWith(`..${sep}`) && !isAbsolute(path));
+}
+
+async function exportLayout(root, create = false) {
+  const repository = resolve(root);
+  const exportRoot = resolve(repository, 'local-exports');
+  if (create) await mkdir(exportRoot, { recursive: true });
+  const [realRepository, realExportRoot] = await Promise.all([realpath(repository), realpath(exportRoot)]);
+  if (realExportRoot !== resolve(realRepository, 'local-exports')) {
+    throw new Error('Evaluation export directory must be the physical local-exports/ directory.');
+  }
+  return { exportRoot, realExportRoot };
+}
+
+export async function readExportArtifact(path, root = repositoryRoot) {
+  const target = resolveExportPath(path, root);
+  const [{ realExportRoot }, realTarget] = await Promise.all([exportLayout(root), realpath(target)]);
+  if (!containsPath(realExportRoot, realTarget)) {
+    throw new Error('Evaluation artifact path escapes local-exports/.');
+  }
+  return readFile(realTarget);
+}
+
+async function prepareExportParent(target, root) {
+  const { exportRoot, realExportRoot } = await exportLayout(root, true);
+  const parentRelative = relative(exportRoot, dirname(target));
+  let current = exportRoot;
+  for (const segment of parentRelative ? parentRelative.split(sep) : []) {
+    current = resolve(current, segment);
+    try { await mkdir(current); }
+    catch (error) { if (error.code !== 'EEXIST') throw error; }
+    const realCurrent = await realpath(current);
+    if (!containsPath(realExportRoot, realCurrent)) {
+      throw new Error('Evaluation artifact path escapes local-exports/.');
+    }
+  }
+}
+
 export function evaluationRunPath(model, run) {
   return `local-exports/phase-6-${model}-run-${run}.json`;
 }
 
 export async function reserveJsonArtifact(path, value, root = repositoryRoot) {
   const target = resolveExportPath(path, root);
-  await mkdir(dirname(target), { recursive: true });
-  const [realRoot, realParent] = await Promise.all([realpath(root), realpath(dirname(target))]);
-  if (realParent !== realRoot && !realParent.startsWith(`${realRoot}${sep}`)) {
-    throw new Error('Evaluation artifact directory escapes the repository.');
-  }
+  await prepareExportParent(target, root);
   const source = `${JSON.stringify(value, null, 2)}\n`;
   let handle;
   try { handle = await open(target, 'wx', 0o600); }

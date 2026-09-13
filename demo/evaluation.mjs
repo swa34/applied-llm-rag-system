@@ -2,6 +2,7 @@ import { checkScenario } from './scenario-checks.mjs';
 
 export const EVALUATION_MODELS = ['gpt-5.6-terra', 'gpt-5.6-luna'];
 export const EVALUATION_REPETITIONS = 3;
+export const EVALUATION_COST_CEILING_USD = 2;
 export const EMBEDDING_MODEL = 'text-embedding-3-small';
 export const EXPECTED_HELDOUT_DENOMINATORS = {
   conversations: 8, turns: 11, expectedAnswers: 9, expectedClarifications: 1,
@@ -224,11 +225,11 @@ export function summarizeRun({ results, index, generationModel, embeddingModel =
     },
     retrieval,
     expectedSourceCitationCoverage: {
-      numerator: results.reduce((sum, result) => sum + result.automatic.expectedSourceCitationCoverage, 0),
+      numerator: expectedAnswers.reduce((sum, result) => sum + result.automatic.expectedSourceCitationCoverage, 0),
       denominator: sourceDenominator,
     },
     expectedFactPatternCoverage: {
-      numerator: results.reduce((sum, result) => sum + result.automatic.expectedFactPatternCoverage, 0),
+      numerator: expectedAnswers.reduce((sum, result) => sum + result.automatic.expectedFactPatternCoverage, 0),
       denominator: sourceDenominator,
     },
     followUpRubric: {

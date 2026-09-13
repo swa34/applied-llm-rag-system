@@ -59,3 +59,5 @@ Time to first content is unavailable because the structured Responses calls are 
 - [`raw/gpt-5.6-luna-run-1.json`](raw/gpt-5.6-luna-run-1.json), [`run-2`](raw/gpt-5.6-luna-run-2.json), and [`run-3`](raw/gpt-5.6-luna-run-3.json) — immutable Luna reports.
 
 The published JSON files contain invented corpus content only. Before publication, all source artifacts were scanned for the configured credential, key-shaped strings, authorization headers, credential variable names, and private absolute paths; none were found. The [evaluation methodology](../../../../../docs/EVALUATION.md) explains the measures and the [limitations](../../../../../docs/LIMITATIONS.md) bound the claims.
+
+The raw reports and freeze remain immutable records of baseline `ecd09ec`. Later review-driven harness hardening does not rewrite those historical artifacts or imply that the post-evaluation checkout produced these results.
