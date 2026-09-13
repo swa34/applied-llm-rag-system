@@ -44,4 +44,4 @@ The original examples and their audited history do not establish a working conve
 
 The [local demonstration](LOCAL_DEMO.md) supplies these fictional conversations and records resolved queries, sources, outcomes, timings, and usage. Inspect each answer against its quotes, including failures. Clarification is a separate outcome, and there are no cached answers in this slice; warm-cache behavior remains untested.
 
-The [evaluation methodology](EVALUATION.md) defines how to measure retrieval, answer support, and conversational behavior. No formal benchmark results have been produced. Focused implementation checks alone do not establish general conversational reliability.
+The [evaluation methodology](EVALUATION.md) and [Phase 6 result](../evaluation/fictional/v1/results/phase-6/README.md) measure retrieval, answer support, and conversational behavior on the frozen fictional suite. All 18 follow-up outcomes were correct across six runs, including clarification after an ambiguous reference, but this compact result does not establish general conversational reliability or cache isolation.

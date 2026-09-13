@@ -1,8 +1,8 @@
 # Local fictional-document demo
 
-The demo provides a terminal application using ten invented Northbridge Learning Institute documents and 38 versioned evidence passages. It runs locally and calls OpenAI for embeddings, context resolution, and answers. Hosted inference incurs API usage charges. These compact fixtures and development scenarios demonstrate behavior to inspect; they are not a formal evaluation or evidence of production reliability.
+The demo provides a terminal application using ten invented Northbridge Learning Institute documents and 38 versioned evidence passages. It runs locally and calls OpenAI for embeddings, context resolution, and answers. Hosted inference incurs API usage charges. The compact Phase 6 evaluation measures this implementation on a frozen fictional suite; it is not evidence of production reliability.
 
-Ten focused live checks passed on the earlier four-document corpus on 2026-09-12. The verification record below describes that historical configuration, earlier failures, and limits. The expanded 21-turn development suite and separate held-out suite have not been run against a live model.
+Ten focused live checks passed on the earlier four-document corpus on 2026-09-12. The verification record below describes that historical configuration, earlier failures, and limits. Phase 6 later ran the expanded development suite once per model and the separate eleven-turn held-out suite three times per model; the [frozen result](../evaluation/fictional/v1/results/phase-6/README.md) preserves all outcomes.
 
 ## Run it
 
@@ -54,11 +54,20 @@ npm run demo:cases
 # Write the scenario JSON report to a local file instead of stdout.
 npm run demo:cases -- --output local-exports/development-v1-results.json
 
+# After producing the two fixed development reports, commit the exact evaluation
+# baseline, then freeze all approved controls and source hashes from that clean checkout.
+npm run eval:freeze -- --output local-exports/phase-6-freeze.json
+
+# Run one canonical, immutable held-out slot. This command will not overwrite it.
+npm run eval:heldout -- --freeze local-exports/phase-6-freeze.json \
+  --output local-exports/phase-6-gpt-5.6-terra-run-1.json \
+  --model gpt-5.6-terra --run 1
+
 # Run deterministic offline tests without API calls or credentials.
 npm test
 ```
 
-In interactive mode, `/new` starts a fresh conversation and `/exit` quits. A successful interactive turn clears the failure exit status from an earlier turn. With piped input, any failed turn makes the process exit nonzero even if later turns succeed. Each application start loads and embeds the fictional corpus again. The scenario command reads only the development manifest; there is intentionally no held-out execution command before the evaluation phase.
+In interactive mode, `/new` starts a fresh conversation and `/exit` quits. A successful interactive turn clears the failure exit status from an earlier turn. With piped input, any failed turn makes the process exit nonzero even if later turns succeed. Each application start loads and embeds the fictional corpus again. The scenario command reads only the development manifest. The separate held-out command requires the exact frozen baseline, model, repetition number, and canonical unused output path before it can make a provider call.
 
 Answers and citations go to stdout. The banner, prompts, diagnostics, and errors go to stderr, so redirecting stdout saves the answer text without those details. The scenario command writes its JSON result to stdout by default; `--output` writes the report to the chosen local file instead. Its report includes corpus file hashes plus dataset and development-suite identities and the suite hash. Use `npm run --silent demo:cases` when redirecting that JSON to avoid npm's command header.
 
@@ -71,6 +80,14 @@ Try these separate conversations, using `/new` between them:
 | Compare travel and purchasing approvals. | Who signs off on that? | Ask which approval the user means. |
 | Who approves an overnight trip? | How do I reset my password? | Retrieve password reset instructions after the topic change. |
 | What does the travel policy cover? | Does it reimburse pet-sitting? | Report insufficient evidence; the policy deliberately omits this category. |
+
+## Frozen evaluation workflow
+
+The Phase 6 runner is intentionally stricter than the ordinary development command. Freeze creation requires a clean tracked checkout, the two canonical development reports, the pinned runtime, and exact approved denominators. It records the clean revision, configuration, pricing sources and date, corpus/suite/application/evaluator hashes, and a conservative phase-cost ledger. Each held-out slot is reserved with exclusive creation before corpus embedding, so an existing or invalid output fails before a billed call. There are no retries; failed and dependent blocked turns remain in their planned denominators.
+
+The six published reports were produced from commit `ecd09ec`. To reproduce that exact baseline, check out that revision, copy the two [published development reports](../evaluation/fictional/v1/results/phase-6/development/) to the canonical `local-exports/phase-6-development-*.json` paths, and use the documented commands. The result artifacts added after the baseline commit intentionally change the working revision, so its original freeze will reject the later documentation checkout. Run outputs use exclusive filenames and should be written in a fresh checkout; do not overwrite or retry the published slots.
+
+The [Phase 6 report](../evaluation/fictional/v1/results/phase-6/README.md) links the exact freeze, six raw held-out reports, machine-readable aggregation, and all-turn manual review. These artifacts contain only invented data and passed a credential/private-path scan before publication.
 
 ## Reproducibility and CI
 
@@ -100,9 +117,9 @@ The missing/unreadable `.nvmrc` regression increased the suite at that stage to 
 
 ### Versioned dataset verification
 
-The dataset expansion and review hardening increase the current suite to **70 tests**, all passing locally on Node 24.21.0 without credentials or installed packages. The preflight loads 38 allowlisted passages from ten documents, validates 13 development conversations and eight held-out conversations, and rejects invalid passage mappings or split overlap. Regression tests prove that unlisted Markdown is not ingested, passage IDs remain stable when section text changes, every answer criterion resolves to an existing passage and is present in that source, answer allowlists cannot exclude their own required facts, non-answer text constraints remain usable, malformed rubrics and unknown tags are rejected, and the original ten tuned turns remain development-only fixtures.
+The dataset expansion and review hardening increased the suite at that stage to **70 tests**, all passing locally on Node 24.21.0 without credentials or installed packages. The preflight loads 38 allowlisted passages from ten documents, validates 13 development conversations and eight held-out conversations, and rejects invalid passage mappings or split overlap. Regression tests prove that unlisted Markdown is not ingested, passage IDs remain stable when section text changes, every answer criterion resolves to an existing passage and is present in that source, answer allowlists cannot exclude their own required facts, non-answer text constraints remain usable, malformed rubrics and unknown tags are rejected, and the original ten tuned turns remain development-only fixtures.
 
-The expanded development runner contains 21 turns and has not been run against a live model. The eleven held-out turns have been schema-checked only; they have not been sent to the resolver, answer model, or embedding endpoint. No accuracy, retrieval, latency, or cost result is claimed for the expanded dataset. GitHub Actions reruns the credential-free checks for pushed revisions.
+The expanded development runner contains 21 turns. Its one-shot Phase 6 shakedowns passed 14/21 narrow checks for Terra and 17/21 for Luna; those imperfect reports were retained rather than tuned. The frozen eleven-turn held-out suite then ran three times per model with no retries or between-run changes. The [Phase 6 result](../evaluation/fictional/v1/results/phase-6/README.md) preserves retrieval, answer, latency, usage, estimated-cost, and human-review evidence. GitHub Actions reruns the credential-free checks for pushed revisions; the current Phase 6 suite has 84 local passing tests, while this result branch has not been pushed for hosted CI.
 
 ## How it works
 

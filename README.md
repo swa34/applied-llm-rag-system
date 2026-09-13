@@ -69,11 +69,13 @@ Chat requires an existing `OPENAI_API_KEY` and incurs API usage charges. The [se
 
 ## Verification
 
-All **70 offline tests** pass on the pinned runtime without credentials or installed packages. They cover runtime and provider contracts, retrieval, citations, conversation recovery, the versioned corpus, case schemas, source labels, rubric consistency, and split isolation. GitHub Actions reruns the offline suite and CLI help check for pushed revisions.
+All **84 offline tests** pass locally on the pinned runtime without credentials or installed packages. They cover runtime and provider contracts, retrieval, citations, conversation recovery, the versioned corpus, case schemas, source labels, rubric consistency, split isolation, frozen-run controls, error redaction, and metric/cost arithmetic. GitHub Actions reruns the offline suite and CLI help check for pushed revisions.
 
 Ten focused live scenarios passed for each of Terra and Luna on 2026-09-12 after the documented resolver and checker corrections. Each final claim was independently inspected against its evidence quote. The [verification record](docs/LOCAL_DEMO.md#terra-and-luna-verification) preserves initial failures and distinguishes raw results from corrected-checker replays.
 
-Those historical results are known development cases, not a held-out benchmark. The expanded dataset contains ten fictional documents, 38 stable-ID passages, 21 development turns, and a structurally separate eleven-turn held-out suite that has not been run. Exact quotation checks establish source membership but do not prove that a quote supports its claim. The [evaluation methodology](docs/EVALUATION.md) and [limitations](docs/LIMITATIONS.md) describe those boundaries without making general accuracy, latency, or cost claims.
+Those historical results are known development cases. Phase 6 separately froze commit `ecd09ec`, then ran the eleven-turn held-out suite three times per model without retries or between-run tuning. Across 66 turns, retrieval hit@1 was 54/54 answerable turns, recall@3 was 66/72 labeled turn/source pairs, expected status was 66/66, and strict human-reviewed outcome correctness was 59/66. All 75 emitted claims were correct and grounded in retrieved evidence, while 64/75 attached exact quotes supported the entire claim. All six conflict answers omitted required reconciliation guidance; one also omitted a conflicting rule. The untrusted annotation was followed in 0/11 turns that retrieved it.
+
+Terra's median full-turn latency was 2.75 seconds over 33 turns and Luna's was 3.03 seconds; p95 was 3.58 and 4.01 seconds respectively. Held-out usage was estimated at USD 0.11745996 using prices dated 2026-09-12, not reconciled provider billing. The [evaluation report](evaluation/fictional/v1/results/phase-6/README.md), [machine-readable summary](evaluation/fictional/v1/results/phase-6/summary.json), [manual review](evaluation/fictional/v1/results/phase-6/manual-review.json), raw runs, methodology, and limitations preserve exact denominators and failures. This small public fictional suite does not establish general production accuracy or an SLA.
 
 ## Repository scope
 

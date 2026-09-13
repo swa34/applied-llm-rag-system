@@ -1,14 +1,16 @@
 # What works here, and what still needs work
 
-This checkout now contains an independent terminal RAG demonstration alongside the original component examples and design material. The initial initial review checked the original tracked files and local commit history; syntax checks passed, but that audit did not run a connected-service demonstration. Ten focused live checks for the new demo passed on 2026-09-12; see [LOCAL_DEMO.md](LOCAL_DEMO.md#verification-record) for the verification record and earlier failures.
+This checkout now contains an independent terminal RAG demonstration alongside the original component examples and design material. The initial review checked the original tracked files and local commit history; syntax checks passed, but that audit did not run a connected-service demonstration. Ten focused live checks for the new demo passed on 2026-09-12; see [LOCAL_DEMO.md](LOCAL_DEMO.md#verification-record) for the verification record and earlier failures.
 
 The [README](../README.md) is the starting point for the showcase. This page records the practical limits behind its claims.
 
 ## Independent demo limits
 
-The [local demo guide](LOCAL_DEMO.md) documents Node.js 24.21.0 from `.nvmrc`, an existing OpenAI credential, and commands for interactive chat, live development scenarios, and offline tests. Its root package manifest has no external dependencies. The ten synthetic documents, 38 passages, and compact case suites establish a bounded implementation scope, not a representative dataset or formal evaluation.
+The [local demo guide](LOCAL_DEMO.md) documents Node.js 24.21.0 from `.nvmrc`, an existing OpenAI credential, and commands for interactive chat, live development scenarios, frozen held-out evaluation, and offline tests. Its root package manifest has no external dependencies. The ten synthetic documents, 38 passages, and compact case suites establish a bounded implementation scope, not a representative production benchmark.
 
-The development and held-out manifests are structurally separate, but both are visible in this public repository. “Held out” means the evaluation turns are excluded from prompt, retrieval, and checker tuning; it is not secrecy. Offline checks detect exact normalized split overlap and invalid source references, not semantic paraphrase leakage or whether a person inspected a file. No held-out live run, answer-correctness score, retrieval metric, or human-adjudicated result exists yet.
+The development and held-out manifests are structurally separate, but both are visible in this public repository. “Held out” means the evaluation turns were excluded from prompt, retrieval, and checker tuning before the Phase 6 freeze; it is not secrecy. Offline checks detect exact normalized split overlap and invalid source references, not semantic paraphrase leakage or whether a person inspected a file. The published held-out outcomes are now exposed and cannot remain an unseen test set after any tuning.
+
+The Phase 6 result covers only 66 executions of eleven turns in eight fictional conversations. It found 59/66 strict human-correct outcomes, with all six conflict answers omitting the required reconciliation guidance. Exact quote membership was 75/75 claims, but only 64/75 attached quotes supported the entire claim because eleven conflict claims added an uncited fall-term qualifier. These counts do not establish accuracy on other questions, corpora, model revisions, or operating environments.
 
 The demo rebuilds an in-memory index on every start, calls hosted inference, and retains at most six completed exchanges per conversation. It has no answer cache, streaming interface, or legacy service integration. Citation checks establish retrieved source membership and exact quotation text; they do not prove that a quote supports its attached claim. Model decisions and retrieval coverage remain fallible.
 
@@ -25,7 +27,7 @@ The active default is `gpt-5.6-terra`, with `gpt-5.6-luna` selectable through `D
 - An ingestion command exists, but a complete answer-generation server and chat endpoint are absent.
 - Cache storage expects database tables without accompanying setup migrations.
 - Python import paths are inconsistent across package and direct-script execution.
-- The demo tests and compact fictional corpus do not cover these original components. The CI workflow covers only the independent demo; its first hosted push and pull-request runs passed. There is no formal evaluation result set.
+- The demo tests and compact fictional corpus do not cover these original components. The CI workflow covers only the independent demo; its first hosted push and pull-request runs passed. The Phase 6 result evaluates only the independent demo.
 
 The examples reference hosted model and vector services as well as Redis, PostgreSQL, and cloud storage. Listing those dependencies does not establish compatibility, availability, or a working local setup. The independent demo supplies its own documented execution path without connecting those services.
 
@@ -53,6 +55,6 @@ The independent terminal demo implements context resolution, clarification, and 
 
 ## Evidence still missing
 
-The demo records per-turn timing and API usage, but there is no formal measurement of latency distributions, cost savings, retrieval quality, or improvement from feedback. No rendered chat interface is available for keyboard, focus, screen-reader, or cancellation accessibility checks. The demo has been checked locally on Linux with Node.js 24.21.0. The configuration check validates local syntax only, and a broader runtime/operating-system matrix has not been verified. Dependency vulnerabilities in the original components have not been checked against a resolved installation.
+Phase 6 reports retrieval, latency, usage, and dated cost estimates, but it does not measure cost savings, feedback improvement, time to first content, or any warm-cache path. Three latency runs per model are descriptive local observations, not an SLA. No rendered chat interface is available for keyboard, focus, screen-reader, or cancellation accessibility checks. The demo has been checked locally on Linux with Node.js 24.21.0. The configuration check validates local syntax only, and a broader runtime/operating-system matrix has not been verified. Dependency vulnerabilities in the original components have not been checked against a resolved installation.
 
-The [evaluation plan](EVALUATION.md) defines how to gather that evidence. Future features and measurements should stay labeled as planned until their checks have run.
+The [evaluation record and methodology](EVALUATION.md) distinguish gathered evidence from measures that remain unavailable. Future features and measurements should stay labeled as planned until their checks have run.

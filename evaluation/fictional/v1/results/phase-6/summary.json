@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "kind": "Phase 6 held-out evaluation summary",
+  "evaluationDate": "2026-09-12",
+  "baseline": {
+    "revision": "ecd09ecb35e20e58348e9ed739d8362f4a27f286",
+    "freezeSha256": "fca9c56263a161156f6f495d18673d634db36936bbd0215bdd7b1e02db142eca",
+    "manualReviewSha256": "b57c287b63bcf9e0bb45fd09a7e0f39f877151fb3e2acfde3187a5853adf2789",
+    "runtime": "Node.js 24.21.0 on Linux x64",
+    "generationModels": ["gpt-5.6-terra", "gpt-5.6-luna"],
+    "embeddingModel": "text-embedding-3-small",
+    "runsPerModel": 3,
+    "retries": 0,
+    "answerCache": false,
+    "topK": 6
+  },
+  "plannedPerRun": {
+    "conversations": 8,
+    "turns": 11,
+    "expectedAnswers": 9,
+    "expectedClarifications": 1,
+    "expectedAbstentions": 1,
+    "expectedSourcePairs": 12,
+    "followUps": 3
+  },
+  "models": [
+    {
+      "model": "gpt-5.6-terra",
+      "runs": [
+        { "run": 1, "rawSha256": "fa5d26b3ddea2448a0d1f972f4e0b903f2215c6ec9f6e1f74fe809968240a813", "automatedRubric": { "numerator": 9, "denominator": 11 }, "estimatedCostUsd": 0.03611984 },
+        { "run": 2, "rawSha256": "a40597f0375786b80abfc30220f811360331b2bff5282ebfadd650e1392dd459", "automatedRubric": { "numerator": 10, "denominator": 11 }, "estimatedCostUsd": 0.03570942 },
+        { "run": 3, "rawSha256": "da9a8a3dd2e8d145347a0d4bd043db4ee236027839760973e257a96330ec7a3f", "automatedRubric": { "numerator": 8, "denominator": 11 }, "estimatedCostUsd": 0.03471736 }
+      ],
+      "execution": { "completed": 33, "errors": 0, "blocked": 0, "provenanceCompleteRuns": 3 },
+      "automatic": {
+        "expectedStatus": { "numerator": 33, "denominator": 33 },
+        "narrowRubric": { "numerator": 27, "denominator": 33 },
+        "retrievalHitAt1": { "numerator": 27, "denominator": 27 },
+        "retrievalRecallAt1": { "numerator": 27, "denominator": 36 },
+        "retrievalHitAt3": { "numerator": 27, "denominator": 27 },
+        "retrievalRecallAt3": { "numerator": 33, "denominator": 36 },
+        "retrievalHitAt6": { "numerator": 27, "denominator": 27 },
+        "retrievalRecallAt6": { "numerator": 33, "denominator": 36 },
+        "expectedSourceCitationCoverage": { "numerator": 33, "denominator": 36 },
+        "expectedFactPatternCoverage": { "numerator": 24, "denominator": 36 },
+        "followUpRubric": { "numerator": 9, "denominator": 9 },
+        "clarification": { "numerator": 3, "denominator": 3 },
+        "abstention": { "numerator": 3, "denominator": 3 },
+        "overAbstention": { "numerator": 0, "denominator": 27 },
+        "inventedAnswer": { "numerator": 0, "denominator": 6 },
+        "structuralQuoteMembership": { "numerator": 37, "denominator": 37 }
+      },
+      "human": {
+        "outcomeCorrect": { "numerator": 29, "denominator": 33 },
+        "expectedAnswerCorrect": { "numerator": 23, "denominator": 27 },
+        "claimCorrectAndGrounded": { "numerator": 37, "denominator": 37 },
+        "fullySupportedByAttachedQuote": { "numerator": 31, "denominator": 37 },
+        "conflictReconciliationComplete": { "numerator": 0, "denominator": 3 },
+        "safeWarmersAnswer": { "numerator": 3, "denominator": 3 }
+      },
+      "latencyMs": {
+        "attempt": { "n": 33, "p50": 2748.51, "p95": 3578.29 },
+        "resolution": { "n": 33, "p50": 1097.54, "p95": 1774.51 },
+        "retrieval": { "n": 30, "p50": 238.39, "p95": 334.16 },
+        "answer": { "n": 30, "p50": 1446.66, "p95": 1928.27 },
+        "total": { "n": 33, "p50": 2747.93, "p95": 3577.71 },
+        "corpusEmbeddingSamples": [787.51, 699.94, 588.77]
+      },
+      "usage": {
+        "resolution": { "inputTokens": 12263, "cachedInputTokens": 0, "outputTokens": 1178, "totalTokens": 13441 },
+        "queryEmbedding": { "inputTokens": 444, "outputTokens": 0, "totalTokens": 444 },
+        "answer": { "inputTokens": 18682, "cachedInputTokens": 0, "outputTokens": 2534, "totalTokens": 21216 },
+        "corpusEmbedding": { "inputTokens": 5187, "outputTokens": 0, "totalTokens": 5187 }
+      },
+      "estimatedHeldoutCostUsd": 0.10654662
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "runs": [
+        { "run": 1, "rawSha256": "0792b26d12260924703c9d3e4c91d157fec528a90aac5e9517d1a21b08c163f7", "automatedRubric": { "numerator": 10, "denominator": 11 }, "estimatedCostUsd": 0.00360752 },
+        { "run": 2, "rawSha256": "39d62ca13f01057b7d5eabaa9a21a21e01ce7b92940a98c6691c807b73e440c7", "automatedRubric": { "numerator": 10, "denominator": 11 }, "estimatedCostUsd": 0.00366262 },
+        { "run": 3, "rawSha256": "7a761385c82e3606ef7215fe97f12bbd70e002ae69ef3e5f3853cd0ad392fd33", "automatedRubric": { "numerator": 9, "denominator": 11 }, "estimatedCostUsd": 0.0036432 }
+      ],
+      "execution": { "completed": 33, "errors": 0, "blocked": 0, "provenanceCompleteRuns": 3 },
+      "automatic": {
+        "expectedStatus": { "numerator": 33, "denominator": 33 },
+        "narrowRubric": { "numerator": 29, "denominator": 33 },
+        "retrievalHitAt1": { "numerator": 27, "denominator": 27 },
+        "retrievalRecallAt1": { "numerator": 27, "denominator": 36 },
+        "retrievalHitAt3": { "numerator": 27, "denominator": 27 },
+        "retrievalRecallAt3": { "numerator": 33, "denominator": 36 },
+        "retrievalHitAt6": { "numerator": 27, "denominator": 27 },
+        "retrievalRecallAt6": { "numerator": 33, "denominator": 36 },
+        "expectedSourceCitationCoverage": { "numerator": 32, "denominator": 36 },
+        "expectedFactPatternCoverage": { "numerator": 29, "denominator": 36 },
+        "followUpRubric": { "numerator": 9, "denominator": 9 },
+        "clarification": { "numerator": 3, "denominator": 3 },
+        "abstention": { "numerator": 3, "denominator": 3 },
+        "overAbstention": { "numerator": 0, "denominator": 27 },
+        "inventedAnswer": { "numerator": 0, "denominator": 6 },
+        "structuralQuoteMembership": { "numerator": 38, "denominator": 38 }
+      },
+      "human": {
+        "outcomeCorrect": { "numerator": 30, "denominator": 33 },
+        "expectedAnswerCorrect": { "numerator": 24, "denominator": 27 },
+        "claimCorrectAndGrounded": { "numerator": 38, "denominator": 38 },
+        "fullySupportedByAttachedQuote": { "numerator": 33, "denominator": 38 },
+        "conflictReconciliationComplete": { "numerator": 0, "denominator": 3 },
+        "safeWarmersAnswer": { "numerator": 3, "denominator": 3 }
+      },
+      "latencyMs": {
+        "attempt": { "n": 33, "p50": 3031.95, "p95": 4009.11 },
+        "resolution": { "n": 33, "p50": 1030.93, "p95": 1856.66 },
+        "retrieval": { "n": 30, "p50": 250.46, "p95": 516.58 },
+        "answer": { "n": 30, "p50": 1656.76, "p95": 2466.3 },
+        "total": { "n": 33, "p50": 3030.9, "p95": 4008.62 },
+        "corpusEmbeddingSamples": [729.18, 547.95, 669.97]
+      },
+      "usage": {
+        "resolution": { "inputTokens": 12235, "cachedInputTokens": 0, "outputTokens": 1172, "totalTokens": 13407 },
+        "queryEmbedding": { "inputTokens": 440, "outputTokens": 0, "totalTokens": 440 },
+        "answer": { "inputTokens": 18687, "cachedInputTokens": 0, "outputTokens": 2675, "totalTokens": 21362 },
+        "corpusEmbedding": { "inputTokens": 5187, "outputTokens": 0, "totalTokens": 5187 }
+      },
+      "estimatedHeldoutCostUsd": 0.01091334
+    }
+  ],
+  "combined": {
+    "completed": { "numerator": 66, "denominator": 66 },
+    "expectedStatus": { "numerator": 66, "denominator": 66 },
+    "automatedNarrowRubric": { "numerator": 56, "denominator": 66 },
+    "humanOutcomeCorrect": { "numerator": 59, "denominator": 66 },
+    "humanExpectedAnswerCorrect": { "numerator": 47, "denominator": 54 },
+    "retrievalHitAt1": { "numerator": 54, "denominator": 54 },
+    "retrievalRecallAt1": { "numerator": 54, "denominator": 72 },
+    "retrievalHitAt3": { "numerator": 54, "denominator": 54 },
+    "retrievalRecallAt3": { "numerator": 66, "denominator": 72 },
+    "retrievalHitAt6": { "numerator": 54, "denominator": 54 },
+    "retrievalRecallAt6": { "numerator": 66, "denominator": 72 },
+    "expectedSourceCitationCoverage": { "numerator": 65, "denominator": 72 },
+    "expectedFactPatternCoverage": { "numerator": 53, "denominator": 72 },
+    "humanClaimCorrectAndGrounded": { "numerator": 75, "denominator": 75 },
+    "humanFullCitationSupport": { "numerator": 64, "denominator": 75 },
+    "followUpCorrect": { "numerator": 18, "denominator": 18 },
+    "clarificationCorrect": { "numerator": 6, "denominator": 6 },
+    "abstentionCorrect": { "numerator": 6, "denominator": 6 },
+    "overAbstention": { "numerator": 0, "denominator": 54 },
+    "inventedAnswer": { "numerator": 0, "denominator": 12 },
+    "safeWarmersAnswer": { "numerator": 6, "denominator": 6 },
+    "untrustedInstructionsFollowed": { "numerator": 0, "denominator": 11, "denominatorMeaning": "turns that retrieved the injected annotation" }
+  },
+  "cost": {
+    "currency": "USD",
+    "pricingEffectiveDate": "2026-09-12",
+    "heldoutEstimatedFromReportedUsage": 0.11745996,
+    "developmentObservedFromAvailableUsage": 0.06759188,
+    "knownObservedUsageSubtotal": 0.18505184,
+    "developmentConservativeLedger": 0.34029111,
+    "phaseConservativeLedger": 0.45775107,
+    "approvedCeiling": 2,
+    "providerBillingConfirmed": false,
+    "note": "One Terra development failure did not retain already-billed usage, so the conservative ledger reserves one full run share. The known observed subtotal is therefore incomplete and is not presented as total spend."
+  },
+  "unavailableMeasures": {
+    "timeToFirstContent": "Responses were non-streaming.",
+    "warmCache": "The demo has no answer cache.",
+    "cacheConversationIsolation": "Not applicable without an answer cache."
+  },
+  "limitations": [
+    "The suite contains only eight public, fictional conversations and eleven turns per run; it is not representative of production traffic.",
+    "Held out means excluded from tuning, not secret, because the suite is public.",
+    "Automated pattern checks are narrow fixture checks, not semantic accuracy; the manual review is reported separately.",
+    "All six conflict responses omitted the required reconciliation guidance, and one Luna run omitted the contrary bulletin entirely.",
+    "Model aliases are mutable; the raw reports retain returned model IDs and timestamps for every completed provider call.",
+    "Latency samples are local end-to-end observations from three runs per model and do not establish an SLA.",
+    "Costs are dated estimates from reported usage, not provider-billing reconciliation."
+  ]
+}

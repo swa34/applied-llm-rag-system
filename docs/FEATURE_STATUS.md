@@ -9,13 +9,13 @@ The historical matrix below records the initial audit of the original 21 tracked
 | Scope | Implementation evidence | Verification boundary |
 |---|---|---|
 | Local execution | Root `package.json`, `demo/cli.mjs`, and the [local demo guide](LOCAL_DEMO.md) | Node.js 24.21.0 pinned; no npm dependencies; hosted API credentials required for chat |
-| Reproducible infrastructure | `.nvmrc`, runtime/configuration preflight, and credential-free GitHub Actions workflow | 70 offline tests pass locally on the pinned runtime; hosted runs and historical counts are recorded in the [verification record](LOCAL_DEMO.md#runtime-and-ci-verification) |
+| Reproducible infrastructure | `.nvmrc`, runtime/configuration preflight, and credential-free GitHub Actions workflow | 84 offline tests pass locally on the pinned runtime; hosted runs and historical counts are recorded in the [verification record](LOCAL_DEMO.md#runtime-and-ci-verification) |
 | Fictional ingestion and retrieval | Ten allowlisted Markdown documents, 38 stable-ID passages, in-memory vectors, cosine/keyword rank fusion | Versioned corpus is separate from legacy ingestion and managed-vector examples |
 | Grounded direct answer | Structured claims with retrieved source IDs and exact evidence quotations | Live supervisor-approval lookup passed; quotation checks do not prove claim support |
 | Follow-up context | Last six completed exchanges, standalone query resolution, fresh retrieval, clarification path | Implemented; ten focused live checks passed on 2026-09-12; see [verification record](LOCAL_DEMO.md#verification-record) |
-| Inspection and checks | Offline test suite, 21-turn development runner, query/source/timing/usage output | Eight-conversation held-out suite is structurally validated but unrun; no formal benchmark or warm-cache test |
+| Inspection and evaluation | Offline tests, development runner, frozen held-out runner, raw per-call provenance, automatic metrics, and all-turn human review | Phase 6 ran 66 held-out turns with 59/66 strict human outcome correctness; see the [result](../evaluation/fictional/v1/results/phase-6/README.md). The small public fictional suite is not a production benchmark; no warm-cache test applies |
 
-The demo does not implement caching, feedback, streaming, a browser interface, or legacy service integration. The focused checks do not constitute a formal evaluation or a comprehensive security review.
+The demo does not implement caching, feedback, streaming, a browser interface, or legacy service integration. The Phase 6 evaluation is bounded to the frozen fictional suite and is not a comprehensive security review.
 
 ## Original component evidence matrix
 
